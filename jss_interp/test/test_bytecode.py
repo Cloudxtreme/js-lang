@@ -2,13 +2,18 @@
 
 from jss_interp.parser import ConstantNum, Variable, Assignment, Stmt, Block, \
         BinOp, Print, If, While
-from jss_interp.bytecode import compile_ast, \
+from jss_interp.bytecode import compile_ast, dis, \
         LOAD_CONSTANT, RETURN, LOAD_VAR, ASSIGN, DISCARD_TOP, BINARY_ADD, \
-        BINARY_EQ, PRINT
+        BINARY_EQ, PRINT, JUMP_IF_FALSE, JUMP_ABSOLUTE
 
 
 def to_code(*bytecode_list):
     return ''.join(map(chr, bytecode_list))
+
+
+def test_dis():
+    code = to_code(LOAD_CONSTANT, 1, RETURN, 0)
+    assert dis(code) == 'LOAD_CONSTANT 1\nRETURN 0'
 
 
 def test_const_num():
@@ -81,3 +86,33 @@ def test_print():
     assert bytecode.numvars == 0
     assert bytecode.constants == [1.0]
 
+
+def test_if():
+    bytecode = compile_ast(If(ConstantNum(1.0), Print(ConstantNum(1.0))))
+    expected_code = to_code(
+            LOAD_CONSTANT, 0,
+            JUMP_IF_FALSE, 8,
+            LOAD_CONSTANT, 1,
+            PRINT, 0,
+            RETURN, 0)
+    assert bytecode.code == expected_code
+    assert bytecode.numvars == 0
+    assert bytecode.constants == [1.0, 1.0]
+
+
+def test_while():
+    bytecode = compile_ast(Block([
+        Print(Variable('x')),
+        While(ConstantNum(1.0), Print(ConstantNum(1.0)))]))
+    expected_code = to_code(
+            LOAD_VAR, 0,
+            PRINT, 0,
+            LOAD_CONSTANT, 0,
+            JUMP_IF_FALSE, 14,
+            LOAD_CONSTANT, 1,
+            PRINT, 0,
+            JUMP_ABSOLUTE, 4,
+            RETURN, 0)
+    assert bytecode.code == expected_code
+    assert bytecode.numvars == 1
+    assert bytecode.constants == [1.0, 1.0]

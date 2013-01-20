@@ -1,11 +1,16 @@
 # -*- encoding: utf-8 -*-
 
 
+old_globals = dict(globals())
+
 LOAD_CONSTANT, LOAD_VAR, ASSIGN, \
-DISCARD_TOP, RETURN, JUMP_IF_FALSE, JUMP_BACKWARD, \
+DISCARD_TOP, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE, \
 BINARY_ADD, BINARY_SUB, BINARY_EQ, BINARY_LT, \
 PRINT \
 = range(12)
+
+bytecodes = dict((globals()[f], f) for f in globals() 
+        if f not in old_globals and f != 'old_globals')
 
 
 BINOP = {'+': BINARY_ADD, '-': BINARY_SUB, '==': BINARY_EQ, '<': BINARY_LT}
@@ -43,6 +48,16 @@ class ByteCode(object):
         self.code = code
         self.constants = constants
         self.numvars = numvars
+
+
+def dis(code):
+    ''' Disassemble code - for debuggin
+    '''
+    dump = []
+    for i in xrange(0, len(code), 2):
+        c, arg = map(ord, code[i:i+2])
+        dump.append('%s %s' % (bytecodes[c], arg))
+    return '\n'.join(dump)
 
 
 def compile_ast(astnode):
