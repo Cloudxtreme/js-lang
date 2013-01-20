@@ -3,6 +3,7 @@
 from pypy.rlib.parsing.ebnfparse import parse_ebnf, make_parse_function
 from pypy.rlib.parsing.deterministic import LexerError
 from pypy.rlib.parsing.parsing import ParseError
+from pypy.rlib.parsing.tree import Symbol
 
 from jss_interp import bytecode
 
@@ -173,6 +174,8 @@ class Transformer(object):
     '''
     def _grab_stmts(self, star):
         stmts = []
+        if isinstance(star, Symbol) and star.additional_info == '}':
+            return stmts
         while len(star.children) == 2:
             stmts.append(self.visit_stmt(star.children[0]))
             star = star.children[1]

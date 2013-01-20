@@ -40,6 +40,9 @@ def test_paser_assignment():
         parser.parse('1.0 = x;')
 
 
-def _test_parse_while():
-    result = parser.parse('while(1) { };')
-    assert result == Block([Stmt(While(ConstantNum(1.0)), Block([]))])
+def test_parse_while():
+    result = parser.parse('while (1) { a = 3; }')
+    assert result == Block([While(ConstantNum(1.0), 
+        Block([Assignment('a', ConstantNum(3))]))])
+    result = parser.parse('while (1) { }')
+    assert result == Block([While(ConstantNum(1.0), Block([]))])
