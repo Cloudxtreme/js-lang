@@ -130,7 +130,7 @@ class Assignment(AstNode):
 
 
 class Print(AstNode):
-    ''' Print something TODO - remove after functions are ready?
+    ''' Print something
     '''
     _fields = ('expr',)
 
