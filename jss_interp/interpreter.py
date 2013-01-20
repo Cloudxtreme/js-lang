@@ -15,6 +15,9 @@ class W_Root(object):
     def lt(self, other):
         raise NotImplementedError
 
+    def eq(self, other):
+        raise NotImplementedError
+
     def add(self, other):
         raise NotImplementedError
 
@@ -25,6 +28,14 @@ class W_BoolObject(W_Root):
 
     def is_true(self):
         return self.boolval
+
+    def eq(self, other):
+        if isinstance(other, W_BoolObject):
+            return W_BoolObject(self.boolval == other.boolval)
+        elif isinstance(other, W_FloatObject):
+            return W_BoolObject(float(self.boolval) == other.floatval)
+        else:
+            return W_BoolObject(False)
 
     def __eq__(self, other):
         ''' NOT_RPYTHON '''
@@ -46,6 +57,10 @@ class W_FloatObject(W_Root):
     def lt(self, other):
         self._assert_float(other)
         return W_BoolObject(self.floatval < other.floatval)
+
+    def eq(self, other):
+        self._assert_float(other)
+        return W_BoolObject(self.floatval == other.floatval)
 
     def add(self, other):
         self._assert_float(other)
@@ -90,6 +105,10 @@ def execute(frame, bc):
             right = frame.pop()
             left = frame.pop()
             frame.push(left.lt(right))
+        elif c == bytecode.BINARY_EQ:
+            right = frame.pop()
+            left = frame.pop()
+            frame.push(left.eq(right))
         elif c == bytecode.JUMP_IF_FALSE:
             if not frame.pop().is_true():
                 pc = arg
