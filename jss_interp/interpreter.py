@@ -26,6 +26,10 @@ class W_BoolObject(W_Root):
     def is_true(self):
         return self.boolval
 
+    def __eq__(self, other):
+        ''' NOT_RPYTHON '''
+        return type(self) == type(other) and self.boolval == other.boolval
+
 
 class W_FloatObject(W_Root):
     def __init__(self, floatval):
@@ -46,6 +50,10 @@ class W_FloatObject(W_Root):
     def add(self, other):
         self._assert_float(other)
         return W_FloatObject(self.floatval + other.floatval)
+
+    def __eq__(self, other):
+        ''' NOT_RPYTHON '''
+        return type(self) == type(other) and self.floatval == other.floatval
 
 
 class Frame(object):
