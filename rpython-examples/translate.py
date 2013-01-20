@@ -1,0 +1,1 @@
+/Users/kostia/programming/pypy/pypy/translator/goal/translate.py
