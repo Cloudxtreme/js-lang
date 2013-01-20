@@ -1,8 +1,10 @@
 # -*- encoding: utf-8 -*-
 
-from jss_interp.parser import ConstantNum, Variable, Assignment, Stmt, Block
+from jss_interp.parser import ConstantNum, Variable, Assignment, Stmt, Block, \
+        BinOp, Print, If, While
 from jss_interp.bytecode import compile_ast, \
-        LOAD_CONSTANT, RETURN, LOAD_VAR, ASSIGN, DISCARD_TOP
+        LOAD_CONSTANT, RETURN, LOAD_VAR, ASSIGN, DISCARD_TOP, BINARY_ADD, \
+        BINARY_EQ, PRINT
 
 
 def to_code(*bytecode_list):
@@ -23,18 +25,6 @@ def test_variable():
     assert bytecode.constants == []
 
 
-def test_assignment():
-    bytecode = compile_ast(Assignment('x', Variable('y')))
-    assert bytecode.code == to_code(LOAD_VAR, 0, ASSIGN, 1, RETURN, 0)
-    assert bytecode.numvars == 2
-    assert bytecode.constants == []
-
-    bytecode = compile_ast(Assignment('x', ConstantNum(13.4)))
-    assert bytecode.code == to_code(LOAD_CONSTANT, 0, ASSIGN, 0, RETURN, 0)
-    assert bytecode.numvars == 1
-    assert bytecode.constants == [13.4]
-
-
 def test_stmt():
     bytecode = compile_ast(Stmt(Variable('x')))
     assert bytecode.code == to_code(LOAD_VAR, 0, DISCARD_TOP, 0, RETURN, 0)
@@ -51,3 +41,43 @@ def test_block():
             RETURN, 0)
     assert bytecode.numvars == 1
     assert bytecode.constants == [12.3]
+
+
+def test_binop():
+    bytecode = compile_ast(BinOp('+', Variable('x'), Variable('y')))
+    assert bytecode.code == to_code(
+            LOAD_VAR, 0,
+            LOAD_VAR, 1, 
+            BINARY_ADD, 0,
+            RETURN, 0)
+    assert bytecode.numvars == 2
+    assert bytecode.constants == []
+
+    bytecode = compile_ast(BinOp('==', ConstantNum(2.0), Variable('y')))
+    assert bytecode.code == to_code(
+            LOAD_CONSTANT, 0,
+            LOAD_VAR, 0, 
+            BINARY_EQ, 0,
+            RETURN, 0)
+    assert bytecode.numvars == 1
+    assert bytecode.constants == [2.0]
+
+
+def test_assignment():
+    bytecode = compile_ast(Assignment('x', Variable('y')))
+    assert bytecode.code == to_code(LOAD_VAR, 0, ASSIGN, 1, RETURN, 0)
+    assert bytecode.numvars == 2
+    assert bytecode.constants == []
+
+    bytecode = compile_ast(Assignment('x', ConstantNum(13.4)))
+    assert bytecode.code == to_code(LOAD_CONSTANT, 0, ASSIGN, 0, RETURN, 0)
+    assert bytecode.numvars == 1
+    assert bytecode.constants == [13.4]
+
+
+def test_print():
+    bytecode = compile_ast(Print(ConstantNum(1.0)))
+    assert bytecode.code == to_code(LOAD_CONSTANT, 0, PRINT, 0, RETURN, 0)
+    assert bytecode.numvars == 0
+    assert bytecode.constants == [1.0]
+
