@@ -4,7 +4,7 @@ import pytest
 
 from jss_interp import parser
 from jss_interp.parser import Block, Stmt, Variable, ConstantNum, While, \
-        Assignment
+        Assignment, If, Print
 
 
 def test_parse_variable():
@@ -46,3 +46,14 @@ def test_parse_while():
         Block([Assignment('a', ConstantNum(3))]))])
     result = parser.parse('while (1) { }')
     assert result == Block([While(ConstantNum(1.0), Block([]))])
+
+
+def test_parse_if():
+    result = parser.parse('if (y) { x = 10; }')
+    assert result == Block([If(Variable('y'), 
+        Block([Assignment('x', ConstantNum(10.0))]))])
+
+
+def test_parse_print():
+    result = parser.parse('print(x);')
+    assert result == Block([Print(Variable('x'))])

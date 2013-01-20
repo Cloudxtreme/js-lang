@@ -21,7 +21,7 @@ statement: expr ";"
     | VARIABLE "=" expr ";" 
     | "while" "(" expr ")" "{" statement* "}" 
     | "if" "(" expr ")" "{" statement* "}" 
-    | "print" expr ";";
+    | "print" "(" expr ")" ";";
 
 expr: atom ADD_SYMBOL expr | atom;
 
@@ -201,7 +201,7 @@ class Transformer(object):
             stmts = self._grab_stmts(node.children[5])
             return If(cond, Block(stmts))
         if node.children[0].additional_info == 'print':
-            return Print(self.visit_expr(node.children[1]))
+            return Print(self.visit_expr(node.children[2]))
         raise NotImplementedError
 
     def visit_expr(self, node):
