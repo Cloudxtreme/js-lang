@@ -16,7 +16,11 @@ VARIABLE: "[a-zA-Z_][a-zA-Z0-9_]*";
 
 main: statement* [EOF];
 
-statement: expr ";" | VARIABLE "=" expr ";" | "while" "(" expr ")" "{" statement* "}" | "if" "(" expr ")" "{" statement* "}" | "print" expr ";";
+statement: expr ";" 
+    | VARIABLE "=" expr ";" 
+    | "while" "(" expr ")" "{" statement* "}" 
+    | "if" "(" expr ")" "{" statement* "}" 
+    | "print" expr ";";
 
 expr: atom ADD_SYMBOL expr | atom;
 
