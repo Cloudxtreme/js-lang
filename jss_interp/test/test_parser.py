@@ -4,7 +4,7 @@ import pytest
 
 from jss_interp import parser
 from jss_interp.parser import Block, Stmt, Variable, ConstantNum, While, \
-        Assignment, If, Print
+        Assignment, If, Print, BinOp
 
 
 def test_parse_variable():
@@ -57,3 +57,16 @@ def test_parse_if():
 def test_parse_print():
     result = parser.parse('print(x);')
     assert result == Block([Print(Variable('x'))])
+
+
+def test_parse_binop():
+    result = parser.parse('x = 1 + 2;')
+    assert result == Block([Assignment('x', 
+        BinOp('+', ConstantNum(1.0), ConstantNum(2.0)))])
+    result = parser.parse('x = x - 2;')
+    assert result == Block([Assignment('x', 
+        BinOp('-', Variable('x'), ConstantNum(2.0)))])
+    result = parser.parse('while (x == y) { }')
+    assert result == Block([While(
+        BinOp('==', Variable('x'), Variable('y')), Block([]))])
+
