@@ -51,7 +51,7 @@ class ByteCode(object):
 
 
 def dis(code):
-    ''' Disassemble code - for debuggin
+    ''' Disassemble code - for debugging
     '''
     dump = []
     for i in xrange(0, len(code), 2):
@@ -60,7 +60,13 @@ def dis(code):
     return '\n'.join(dump)
 
 
+def to_code(*bytecode_list):
+    return ''.join(map(chr, bytecode_list))
+
+
 def compile_ast(astnode):
+    ''' Create bytecode object from an ast node
+    '''
     c = CompilerContext()
     astnode.compile(c)
     c.emit(RETURN, 0)
