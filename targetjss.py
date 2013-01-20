@@ -6,18 +6,17 @@
 import sys
 from pypy.rlib.streamio import open_file_as_stream
 
-from jss_interp.parser import parse
+from jss_interp.interpreter import main
 
 
-def main(argv):
+def entry_point(argv):
     if not len(argv) == 2:
         print __doc__
         return 1
     f = open_file_as_stream(argv[1])
-    data = f.readall()
+    source = f.readall()
     f.close()
-    print parse(data)
-    return 0
+    return main(source)
 
 
 def target(driver, args):
@@ -25,5 +24,5 @@ def target(driver, args):
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    entry_point(sys.argv)
 

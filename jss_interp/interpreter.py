@@ -21,6 +21,9 @@ class W_Root(object):
     def add(self, other):
         raise NotImplementedError
 
+    def to_string(self):
+        raise NotImplementedError
+
 
 class W_BoolObject(W_Root):
     def __init__(self, boolval):
@@ -36,6 +39,9 @@ class W_BoolObject(W_Root):
             return W_BoolObject(float(self.boolval) == other.floatval)
         else:
             return W_BoolObject(False)
+
+    def to_string(self):
+        return 'true' if self.boolval else 'false'
 
     def __eq__(self, other):
         ''' NOT_RPYTHON '''
@@ -65,6 +71,9 @@ class W_FloatObject(W_Root):
     def add(self, other):
         self._assert_float(other)
         return W_FloatObject(self.floatval + other.floatval)
+
+    def to_string(self):
+        return str(self.floatval)
 
     def __eq__(self, other):
         ''' NOT_RPYTHON '''
@@ -116,7 +125,7 @@ def execute(frame, bc):
             pc = arg
         elif c == bytecode.PRINT:
             item = frame.pop()
-            print item
+            print item.to_string()
         elif c == bytecode.ASSIGN:
             frame.vars[arg] = frame.pop()
         elif c == bytecode.LOAD_VAR:
