@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
 
 from pypy.rlib.parsing.ebnfparse import parse_ebnf, make_parse_function
+from pypy.rlib.parsing.deterministic import LexerError
+from pypy.rlib.parsing.parsing import ParseError
 
 from jss_interp import bytecode
 
@@ -31,7 +33,8 @@ class AstNode(object):
     _fields = ()
 
     def __eq__(self, other):
-        return (type(self), self.__dict__) == (type(other), other.__dict__)
+        return type(self) == type(other) and \
+                self.__dict__ == other.__dict__
 
     def __repr__(self):
         return '<%s %s>' % (type(self).__name__,
@@ -216,5 +219,8 @@ transformer = Transformer()
 def parse(source):
     ''' Parse the source code and produce an AST
     '''
-    return transformer.visit_main(_parse(source))
+    try:
+        return transformer.visit_main(_parse(source))
+    except (LexerError, ParseError):
+        raise
 
