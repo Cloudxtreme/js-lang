@@ -189,18 +189,18 @@ class Transformer(object):
     def visit_stmt(self, node):
         if len(node.children) == 2:
             return Stmt(self.visit_expr(node.children[0]))
+        head_info = node.children[0].additional_info
         if len(node.children) == 4:
-            return Assignment(node.children[0].additional_info,
-                              self.visit_expr(node.children[2]))
-        if node.children[0].additional_info == 'while':
+            return Assignment(head_info, self.visit_expr(node.children[2]))
+        if head_info == 'while':
             cond = self.visit_expr(node.children[2])
             stmts = self._grab_stmts(node.children[5])
             return While(cond, Block(stmts))
-        if node.children[0].additional_info == 'if':
+        if head_info == 'if':
             cond = self.visit_expr(node.children[2])
             stmts = self._grab_stmts(node.children[5])
             return If(cond, Block(stmts))
-        if node.children[0].additional_info == 'print':
+        if head_info == 'print':
             return Print(self.visit_expr(node.children[2]))
         raise NotImplementedError
 
