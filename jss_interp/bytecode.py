@@ -36,11 +36,11 @@ class CompilerContext(object):
             return len(self.names) - 1
 
     def emit(self, bc, arg=0):
-        self.data.append(chr(bc))
-        self.data.append(chr(arg))
+        self.data.append(bc)
+        self.data.append(arg)
 
     def create_bytecode(self):
-        return ByteCode(''.join(self.data), self.constants[:], len(self.names))
+        return ByteCode(to_code(self.data), self.constants[:], len(self.names))
 
 
 class ByteCode(object):
@@ -60,7 +60,7 @@ def dis(code):
     return '\n'.join(dump)
 
 
-def to_code(*bytecode_list):
+def to_code(bytecode_list):
     return ''.join(map(chr, bytecode_list))
 
 

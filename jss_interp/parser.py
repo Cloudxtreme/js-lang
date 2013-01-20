@@ -156,7 +156,7 @@ class If(AstNode):
         ctx.emit(bytecode.JUMP_IF_FALSE, 0) # to be patched later
         jump_pos = len(ctx.data) - 1
         self.body.compile(ctx)
-        ctx.data[jump_pos] = chr(len(ctx.data))
+        ctx.data[jump_pos] = len(ctx.data)
 
 
 class While(AstNode):
@@ -175,7 +175,7 @@ class While(AstNode):
         jump_pos = len(ctx.data) - 1
         self.body.compile(ctx)
         ctx.emit(bytecode.JUMP_ABSOLUTE, cond_pos)
-        ctx.data[jump_pos] = chr(len(ctx.data))
+        ctx.data[jump_pos] = len(ctx.data)
 
 
 class Transformer(object):
