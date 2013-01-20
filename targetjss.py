@@ -20,7 +20,7 @@ def entry_point(argv):
 
 
 def target(driver, args):
-    return main, None
+    return entry_point, None
 
 
 if __name__ == '__main__':

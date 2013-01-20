@@ -54,8 +54,7 @@ class W_FloatObject(W_Root):
 
     def _assert_float(self, other):
         if not isinstance(other, W_FloatObject):
-            raise OperationalError(
-                    'Expected a number, got %s' % type(other).__name__) 
+            raise OperationalError('Expected a number')
 
     def is_true(self):
         return bool(self.floatval)

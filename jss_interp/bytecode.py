@@ -61,7 +61,7 @@ def dis(code):
 
 
 def to_code(bytecode_list):
-    return ''.join(map(chr, bytecode_list))
+    return ''.join([chr(c) for c in bytecode_list])
 
 
 def compile_ast(astnode):
