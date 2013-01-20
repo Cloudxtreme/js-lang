@@ -1,10 +1,10 @@
 # -*- encoding: utf-8 -*-
 
-from jss_interp.bytecode import compile_ast, dis, to_code, ByteCode, \
+from jss_interp.bytecode import to_code, ByteCode, \
         LOAD_CONSTANT, RETURN, LOAD_VAR, ASSIGN, DISCARD_TOP, BINARY_ADD, \
-        BINARY_EQ, BINARY_LT, PRINT, JUMP_IF_FALSE, JUMP_ABSOLUTE
-from jss_interp.interpreter import Frame, interpret, W_FloatObject, \
-        W_BoolObject
+        BINARY_EQ, BINARY_LT, JUMP_IF_FALSE, JUMP_ABSOLUTE
+from jss_interp.interpreter import Frame, interpret
+from jss_interp.types import W_FloatObject, W_BoolObject
 
 
 def test_frame():
