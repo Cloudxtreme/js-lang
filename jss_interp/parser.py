@@ -3,7 +3,7 @@
 from pypy.rlib.parsing.ebnfparse import parse_ebnf, make_parse_function
 from pypy.rlib.parsing.deterministic import LexerError
 from pypy.rlib.parsing.parsing import ParseError
-from pypy.rlib.parsing.tree import Symbol
+from pypy.rlib.parsing.tree import Symbol, Nonterminal 
 
 from jss_interp import bytecode
 
@@ -11,8 +11,13 @@ from jss_interp import bytecode
 grammar = r'''
 
 IGNORE: "[ \t\n]";
+
 FLOAT_NUMBER: "[-+]?0\.?[0-9]*|[-+]?[1-9][0-9]*\.?[0-9]*|[-+]?\.[0-9]+";
-ADD_SYMBOL: "(==)|[-+<]";
+
+ADD_OPER: "[+-]";
+MULT_OPER: "[*/]";
+COMP_OPER: "(==)|(>=)|(<=)|>|<|(!=)";
+
 VARIABLE: "[a-zA-Z_][a-zA-Z0-9_]*";
 
 main: statement* [EOF];
@@ -23,9 +28,12 @@ statement: expr ";"
     | "if" "(" expr ")" "{" statement* "}" 
     | "print" "(" expr ")" ";";
 
-expr: atom ADD_SYMBOL expr | atom;
-
+expr: additive COMP_OPER expr | additive;
+additive: multitive ADD_OPER additive | multitive;
+multitive: primary MULT_OPER multitive | primary;
+primary: "(" additive ")" | atom;
 atom: FLOAT_NUMBER | VARIABLE;
+
 '''
 
 regexs, rules, ToAST = parse_ebnf(grammar)
@@ -216,9 +224,12 @@ class Transformer(object):
 
     def visit_expr(self, node):
         if len(node.children) == 1:
-            return self.visit_atom(node.children[0])
+            if node.symbol == 'atom':
+                return self.visit_atom(node)
+            else:
+                return self.visit_expr(node.children[0])
         return BinOp(node.children[1].additional_info,
-                     self.visit_atom(node.children[0]),
+                     self.visit_expr(node.children[0]),
                      self.visit_expr(node.children[2]))
 
     def visit_atom(self, node):
