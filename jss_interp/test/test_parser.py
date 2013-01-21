@@ -4,7 +4,7 @@ import pytest
 
 from jss_interp import parser
 from jss_interp.parser import Block, Stmt, Variable, ConstantNum, While, \
-        Assignment, If, Print, BinOp
+        Assignment, If, Call, BinOp
 
 
 def test_parse_variable():
@@ -56,7 +56,7 @@ def test_parse_if():
 
 def test_parse_print():
     result = parser.parse('print(x);')
-    assert result == Block([Print(Variable('x'))])
+    assert result == Block([Stmt(Call(Variable('print'), Variable('x')))])
 
 
 def test_parse_binop():

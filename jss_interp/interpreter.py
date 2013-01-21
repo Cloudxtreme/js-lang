@@ -24,37 +24,50 @@ def execute(frame, bc):
         c = ord(code[pc])
         arg = ord(code[pc + 1])
         pc += 2
+
         if c == bytecode.LOAD_CONSTANT:
             frame.push(W_FloatObject(bc.constants[arg]))
+
+        elif c == bytecode.LOAD_VAR:
+            frame.push(frame.vars[arg])
+
+        elif c == bytecode.ASSIGN:
+            frame.vars[arg] = frame.pop()
+
         elif c == bytecode.DISCARD_TOP:
             frame.pop()
-        elif c == bytecode.RETURN:
-            return
+
         elif c == bytecode.BINARY_ADD:
             right = frame.pop()
             left = frame.pop()
             w_res = left.add(right)
             frame.push(w_res)
+
         elif c == bytecode.BINARY_LT:
             right = frame.pop()
             left = frame.pop()
             frame.push(left.lt(right))
+
         elif c == bytecode.BINARY_EQ:
             right = frame.pop()
             left = frame.pop()
             frame.push(left.eq(right))
+
         elif c == bytecode.JUMP_IF_FALSE:
             if not frame.pop().is_true():
                 pc = arg
+
         elif c == bytecode.JUMP_ABSOLUTE:
             pc = arg
-        elif c == bytecode.PRINT:
-            item = frame.pop()
-            print item.to_string()
-        elif c == bytecode.ASSIGN:
-            frame.vars[arg] = frame.pop()
-        elif c == bytecode.LOAD_VAR:
-            frame.push(frame.vars[arg])
+
+        elif c == bytecode.CALL:
+            arg = frame.pop()
+            fn = frame.pop()
+            frame.push(fn.call(arg))
+
+        elif c == bytecode.RETURN:
+            return
+
         else:
             assert False
 

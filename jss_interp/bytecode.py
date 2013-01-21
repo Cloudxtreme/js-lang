@@ -6,7 +6,7 @@ old_globals = dict(globals())
 LOAD_CONSTANT, LOAD_VAR, ASSIGN, \
 DISCARD_TOP, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE, \
 BINARY_ADD, BINARY_SUB, BINARY_EQ, BINARY_LT, \
-PRINT \
+CALL \
 = range(12)
 
 bytecodes = dict((globals()[f], f) for f in globals() 

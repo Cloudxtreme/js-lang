@@ -25,13 +25,13 @@ main: statement* [EOF];
 statement: expr ";" 
     | VARIABLE "=" expr ";" 
     | "while" "(" expr ")" "{" statement* "}" 
-    | "if" "(" expr ")" "{" statement* "}" 
-    | "print" "(" expr ")" ";";
+    | "if" "(" expr ")" "{" statement* "}";
 
 expr: additive COMP_OPER expr | additive;
 additive: multitive ADD_OPER additive | multitive;
-multitive: primary MULT_OPER multitive | primary;
-primary: "(" additive ")" | atom;
+multitive: call MULT_OPER multitive | call;
+call: primary "(" call ")" | primary;
+primary: "(" expr ")" | atom;
 atom: FLOAT_NUMBER | VARIABLE;
 
 '''
@@ -137,17 +137,19 @@ class Assignment(AstNode):
         ctx.emit(bytecode.ASSIGN, ctx.register_var(self.varname))
 
 
-class Print(AstNode):
-    ''' Print something
+class Call(AstNode):
+    ''' Call function (with one argument now)
     '''
-    _fields = ('expr',)
+    _fields = ('fn', 'arg',)
 
-    def __init__(self, expr):
-        self.expr = expr
+    def __init__(self, fn, arg):
+        self.fn = fn
+        self.arg = arg
 
     def compile(self, ctx):
-        self.expr.compile(ctx)
-        ctx.emit(bytecode.PRINT)
+        self.arg.compile(ctx)
+        self.fn.compile(ctx) # FIXME - will work only for variable
+        ctx.emit(bytecode.CALL)
 
 
 class If(AstNode):
@@ -218,8 +220,6 @@ class Transformer(object):
             cond = self.visit_expr(node.children[2])
             stmts = self._grab_stmts(node.children[5])
             return If(cond, Block(stmts))
-        if head_info == 'print':
-            return Print(self.visit_expr(node.children[2]))
         raise NotImplementedError
 
     def visit_expr(self, node):
@@ -236,6 +236,10 @@ class Transformer(object):
                 return BinOp(node.children[1].additional_info,
                             self.visit_expr(node.children[0]),
                             self.visit_expr(node.children[2]))
+        if len(node.children) == 4:
+            return Call(
+                    self.visit_expr(node.children[0]),
+                    self.visit_expr(node.children[2]))
         raise NotImplementedError
 
     def visit_atom(self, node):
