@@ -3,7 +3,7 @@
 from pypy.rlib.parsing.ebnfparse import parse_ebnf, make_parse_function
 from pypy.rlib.parsing.deterministic import LexerError
 from pypy.rlib.parsing.parsing import ParseError
-from pypy.rlib.parsing.tree import Symbol, Nonterminal 
+from pypy.rlib.parsing.tree import Symbol
 
 from jss_interp import bytecode
 
@@ -30,7 +30,7 @@ statement: expr ";"
 expr: additive COMP_OPER expr | additive;
 additive: multitive ADD_OPER additive | multitive;
 multitive: call MULT_OPER multitive | call;
-call: primary "(" call ")" | primary;
+call: primary "(" expr ")" | primary;
 primary: "(" expr ")" | atom;
 atom: FLOAT_NUMBER | VARIABLE;
 
@@ -148,7 +148,7 @@ class Call(AstNode):
 
     def compile(self, ctx):
         self.arg.compile(ctx)
-        self.fn.compile(ctx) # FIXME - will work only for variable
+        self.fn.compile(ctx)
         ctx.emit(bytecode.CALL)
 
 
