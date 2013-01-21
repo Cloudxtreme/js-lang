@@ -54,9 +54,24 @@ def test_parse_if():
         Block([Assignment('x', ConstantNum(10.0))]))])
 
 
-def test_parse_print():
+def test_parse_fn_call():
     result = parser.parse('print(x);')
     assert result == Block([Stmt(Call(Variable('print'), Variable('x')))])
+
+    result = parser.parse('foo(1);')
+    assert result == Block([Stmt(Call(Variable('foo'), ConstantNum(1.0)))])
+
+    result = parser.parse('foo(1 + 2);')
+    assert result == Block([Stmt(Call(Variable('foo'), 
+        BinOp('+', ConstantNum(1.0), ConstantNum(2.0))))])
+
+    result = parser.parse('foo(x + y);')
+    assert result == Block([Stmt(Call(Variable('foo'), 
+        BinOp('+', Variable('x'), Variable('y'))))])
+
+    result = parser.parse('foo(f(x) + y);')
+    assert result == Block([Stmt(Call(Variable('foo'), 
+        BinOp('+', Call(Variable('f'), Variable('x')), Variable('y'))))])
 
 
 def test_parse_binop():
