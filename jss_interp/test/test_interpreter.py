@@ -36,16 +36,6 @@ def test_load_constant():
     assert frame.vars == []
 
 
-def test_load_variable():
-    bc = ByteCode(to_code([
-        LOAD_VAR, 0,
-        RETURN, 0]), 
-        [], ['x'])
-    frame = interpret(bc)
-    assert frame.valuestack == [None]
-    assert frame.vars == [None]
-
-
 def test_assignment():
     bc = ByteCode(to_code([
         LOAD_CONSTANT, 0,
@@ -54,6 +44,18 @@ def test_assignment():
         [2.71], ['x'])
     frame = interpret(bc)
     assert frame.valuestack == []
+    assert frame.vars == [W_FloatObject(2.71)]
+
+
+def test_load_variable():
+    bc = ByteCode(to_code([
+        LOAD_CONSTANT, 0,
+        ASSIGN, 0,
+        LOAD_VAR, 0,
+        RETURN, 0]), 
+        [2.71], ['x'])
+    frame = interpret(bc)
+    assert frame.valuestack == [W_FloatObject(2.71)]
     assert frame.vars == [W_FloatObject(2.71)]
 
 

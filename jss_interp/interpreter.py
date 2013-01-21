@@ -2,13 +2,15 @@
 
 from jss_interp import parser
 from jss_interp import bytecode
-from jss_interp.types import W_FloatObject
+from jss_interp.types import W_FloatObject, OperationalError
+from jss_interp.builtins import BUILTINS
 
 
 class Frame(object):
     def __init__(self, bc):
         self.valuestack = []
-        self.vars = [None] * len(bc.names) # FIXME?
+        self.names = bc.names
+        self.vars = [None] * len(self.names)
 
     def push(self, v):
         self.valuestack.append(v)
@@ -29,7 +31,15 @@ def execute(frame, bc):
             frame.push(W_FloatObject(bc.constants[arg]))
 
         elif c == bytecode.LOAD_VAR:
-            frame.push(frame.vars[arg])
+            # TODO - maybe move this logic to some other place?
+            value = frame.vars[arg]
+            if value is None:
+                name = frame.names[arg]
+                value = BUILTINS.get(name)
+                if value is None:
+                    raise OperationalError(
+                            'Variable "%s" is not defined' % name)
+            frame.push(value)
 
         elif c == bytecode.ASSIGN:
             frame.vars[arg] = frame.pop()
