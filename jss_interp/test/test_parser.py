@@ -70,3 +70,21 @@ def test_parse_binop():
     assert result == Block([While(
         BinOp('==', Variable('x'), Variable('y')), Block([]))])
 
+
+def test_parse_arithmetic():
+    result = parser.parse('x * (y + z);')
+    assert result == Block([Stmt(BinOp('*', Variable('x'),
+        BinOp('+', Variable('y'), Variable('z'))))])
+
+    result = parser.parse('z + x * y;')
+    assert result == Block([Stmt(BinOp('+', Variable('z'),
+        BinOp('*', Variable('x'), Variable('y'))))])
+
+    result = parser.parse('z * x + y;')
+    assert result == Block([Stmt(BinOp('+', 
+        BinOp('*', Variable('z'), Variable('x')), Variable('y')))])
+
+    result = parser.parse('x > z + x * y;')
+    assert result == Block([Stmt(BinOp('>', Variable('x'), 
+        BinOp('+', Variable('z'),
+            BinOp('*', Variable('x'), Variable('y')))))])

@@ -228,9 +228,15 @@ class Transformer(object):
                 return self.visit_atom(node)
             else:
                 return self.visit_expr(node.children[0])
-        return BinOp(node.children[1].additional_info,
-                     self.visit_expr(node.children[0]),
-                     self.visit_expr(node.children[2]))
+        if len(node.children) == 3:
+            if all(isinstance(c, Symbol) and c.additional_info == br for c, br
+                    in [(node.children[0], '('), (node.children[2], ')')]):
+                return self.visit_expr(node.children[1])
+            else:
+                return BinOp(node.children[1].additional_info,
+                            self.visit_expr(node.children[0]),
+                            self.visit_expr(node.children[2]))
+        raise NotImplementedError
 
     def visit_atom(self, node):
         chnode = node.children[0]
