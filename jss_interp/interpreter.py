@@ -71,8 +71,8 @@ def execute(frame, bc):
             pc = arg
 
         elif c == bytecode.CALL:
-            arg = frame.pop()
             fn = frame.pop()
+            arg = frame.pop()
             frame.push(fn.call(arg))
 
         elif c == bytecode.RETURN:

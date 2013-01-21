@@ -9,11 +9,11 @@ class W_BuilinFn(W_Root):
 
 
 class W_PrintFn(W_BuilinFn):
-    def call(self, arg):
-        print arg 
+    def call(self, w_x):
+        print w_x.to_string()
 
 
 BUILTINS = {
-        'print': W_PrintFn,
+        'print': W_PrintFn(),
         #'assert': W_AssertFn,
         }

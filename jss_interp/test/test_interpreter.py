@@ -2,7 +2,7 @@
 
 from jss_interp.bytecode import to_code, ByteCode, \
         LOAD_CONSTANT, RETURN, LOAD_VAR, ASSIGN, DISCARD_TOP, BINARY_ADD, \
-        BINARY_EQ, BINARY_LT, JUMP_IF_FALSE, JUMP_ABSOLUTE
+        BINARY_EQ, BINARY_LT, JUMP_IF_FALSE, JUMP_ABSOLUTE, CALL
 from jss_interp.interpreter import Frame, interpret
 from jss_interp.types import W_FloatObject, W_BoolObject
 
@@ -119,3 +119,17 @@ def test_binary_bool():
                 [x, y], [])
             frame = interpret(bc)
             assert frame.valuestack == [W_BoolObject(check_fn(x, y))]
+
+
+def test_print(capfd):
+    bc = ByteCode(to_code([
+        LOAD_CONSTANT, 0,
+        LOAD_VAR, 0,
+        CALL, 0,
+        DISCARD_TOP, 0,
+        RETURN, 0]), [3.78], ['print'])
+    frame = interpret(bc)
+    out, _ = capfd.readouterr()
+    assert out == '3.78\n'
+    assert frame.valuestack == []
+    
