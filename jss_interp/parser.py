@@ -229,8 +229,12 @@ class Transformer(object):
             else:
                 return self.visit_expr(node.children[0])
         if len(node.children) == 3:
-            if all(isinstance(c, Symbol) and c.additional_info == br for c, br
-                    in [(node.children[0], '('), (node.children[2], ')')]):
+            is_par_expr = True
+            for c, br in [(node.children[0], '('), (node.children[2], ')')]:
+                if not (isinstance(c, Symbol) and c.additional_info == br):
+                    is_par_expr = False
+                    break
+            if is_par_expr:
                 return self.visit_expr(node.children[1])
             else:
                 return BinOp(node.children[1].additional_info,

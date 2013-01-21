@@ -35,7 +35,7 @@ def execute(frame, bc):
             value = frame.vars[arg]
             if value is None:
                 name = frame.names[arg]
-                value = BUILTINS.get(name)
+                value = BUILTINS.get(name, None)
                 if value is None:
                     raise OperationalError(
                             'Variable "%s" is not defined' % name)
