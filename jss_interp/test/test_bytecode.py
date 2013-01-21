@@ -15,32 +15,39 @@ def test_dis():
 def test_const_num():
     bytecode = compile_ast(ConstantNum(10.0))
     assert bytecode.code == to_code([LOAD_CONSTANT, 0, RETURN, 0])
-    assert bytecode.numvars == 0
+    assert bytecode.names == []
     assert bytecode.constants == [10.0]
 
 
 def test_variable():
     bytecode = compile_ast(Variable('x'))
     assert bytecode.code == to_code([LOAD_VAR, 0, RETURN, 0])
-    assert bytecode.numvars == 1
+    assert bytecode.names == ['x']
+    assert bytecode.constants == []
+
+    bytecode = compile_ast(Block([
+        Variable('zzz'), Variable('y'), Variable('zzz')]))
+    assert bytecode.code == to_code([
+        LOAD_VAR, 0, LOAD_VAR, 1, LOAD_VAR, 0, RETURN, 0])
+    assert bytecode.names == ['zzz', 'y']
     assert bytecode.constants == []
 
 
 def test_stmt():
     bytecode = compile_ast(Stmt(Variable('x')))
     assert bytecode.code == to_code([LOAD_VAR, 0, DISCARD_TOP, 0, RETURN, 0])
-    assert bytecode.numvars == 1
+    assert bytecode.names == ['x']
     assert bytecode.constants == []
 
 
 def test_block():
     bytecode = compile_ast(Block([
-        Stmt(Variable('x')), Stmt(ConstantNum(12.3))]))
+        Stmt(Variable('xyz')), Stmt(ConstantNum(12.3))]))
     assert bytecode.code == to_code([
             LOAD_VAR, 0, DISCARD_TOP, 0, 
             LOAD_CONSTANT, 0, DISCARD_TOP, 0,
             RETURN, 0])
-    assert bytecode.numvars == 1
+    assert bytecode.names == ['xyz']
     assert bytecode.constants == [12.3]
 
 
@@ -51,7 +58,7 @@ def test_binop():
             LOAD_VAR, 1, 
             BINARY_ADD, 0,
             RETURN, 0])
-    assert bytecode.numvars == 2
+    assert bytecode.names == ['x', 'y']
     assert bytecode.constants == []
 
     bytecode = compile_ast(BinOp('==', ConstantNum(2.0), Variable('y')))
@@ -60,19 +67,19 @@ def test_binop():
             LOAD_VAR, 0, 
             BINARY_EQ, 0,
             RETURN, 0])
-    assert bytecode.numvars == 1
+    assert bytecode.names == ['y']
     assert bytecode.constants == [2.0]
 
 
 def test_assignment():
     bytecode = compile_ast(Assignment('x', Variable('y')))
     assert bytecode.code == to_code([LOAD_VAR, 0, ASSIGN, 1, RETURN, 0])
-    assert bytecode.numvars == 2
+    assert bytecode.names == ['y', 'x']
     assert bytecode.constants == []
 
     bytecode = compile_ast(Assignment('x', ConstantNum(13.4)))
     assert bytecode.code == to_code([LOAD_CONSTANT, 0, ASSIGN, 0, RETURN, 0])
-    assert bytecode.numvars == 1
+    assert bytecode.names == ['x']
     assert bytecode.constants == [13.4]
 
 
@@ -83,7 +90,7 @@ def test_print():
         LOAD_VAR, 0,
         CALL, 0,
         RETURN, 0])
-    assert bytecode.numvars == 1
+    assert bytecode.names == ['print']
     assert bytecode.constants == [1.0]
 
 
@@ -95,7 +102,7 @@ def test_if():
             LOAD_CONSTANT, 1,
             RETURN, 0])
     assert bytecode.code == expected_code
-    assert bytecode.numvars == 0
+    assert bytecode.names == []
     assert bytecode.constants == [1.0, 2.0]
 
 
@@ -111,5 +118,5 @@ def test_while():
             JUMP_ABSOLUTE, 2,
             RETURN, 0])
     assert bytecode.code == expected_code
-    assert bytecode.numvars == 1
+    assert bytecode.names == ['x']
     assert bytecode.constants == [1.0, 1.0]

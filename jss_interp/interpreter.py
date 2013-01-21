@@ -8,7 +8,7 @@ from jss_interp.types import W_FloatObject
 class Frame(object):
     def __init__(self, bc):
         self.valuestack = []
-        self.vars = [None] * bc.numvars
+        self.vars = [None] * len(bc.names) # FIXME?
 
     def push(self, v):
         self.valuestack.append(v)

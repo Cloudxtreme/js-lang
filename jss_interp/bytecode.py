@@ -40,14 +40,14 @@ class CompilerContext(object):
         self.data.append(arg)
 
     def create_bytecode(self):
-        return ByteCode(to_code(self.data), self.constants[:], len(self.names))
+        return ByteCode(to_code(self.data), self.constants[:], self.names[:])
 
 
 class ByteCode(object):
-    def __init__(self, code, constants, numvars):
+    def __init__(self, code, constants, names):
         self.code = code
         self.constants = constants
-        self.numvars = numvars
+        self.names = names
 
 
 def dis(code):
