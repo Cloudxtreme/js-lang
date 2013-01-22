@@ -140,16 +140,18 @@ class Assignment(AstNode):
 class Call(AstNode):
     ''' Call function (with one argument now)
     '''
-    _fields = ('fn', 'arg',)
+    _fields = ('fn', 'args',)
 
-    def __init__(self, fn, arg):
+    def __init__(self, fn, args):
         self.fn = fn
-        self.arg = arg
+        self.args = args
 
     def compile(self, ctx):
-        self.arg.compile(ctx)
+        # FIXME - this is all wrong for complex args
+        for arg in self.args:
+            arg.compile(ctx)
         self.fn.compile(ctx)
-        ctx.emit(bytecode.CALL)
+        ctx.emit(bytecode.CALL, len(self.args))
 
 
 class If(AstNode):
@@ -240,6 +242,7 @@ class Transformer(object):
                 return BinOp(node.children[1].additional_info,
                             self.visit_expr(node.children[0]),
                             self.visit_expr(node.children[2]))
+        # FIXME
         if len(node.children) == 4:
             return Call(
                     self.visit_expr(node.children[0]),
