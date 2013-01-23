@@ -30,7 +30,8 @@ statement: expr ";"
 expr: additive COMP_OPER expr | additive;
 additive: multitive ADD_OPER additive | multitive;
 multitive: call MULT_OPER multitive | call;
-call: primary "(" expr ")" | primary;
+call: primary "(" csexpr ")" | primary "(" ")" | primary;
+csexpr: expr "," csexpr | expr;
 primary: "(" expr ")" | atom;
 atom: FLOAT_NUMBER | VARIABLE;
 
@@ -230,6 +231,13 @@ class Transformer(object):
                 return self.visit_atom(node)
             else:
                 return self.visit_expr(node.children[0])
+        if node.symbol == 'call':
+            fn = self.visit_expr(node.children[0])
+            if len(node.children) == 3:
+                args = self.visit_csexpr(node.children[2])
+            else:
+                args = []
+            return Call(fn, args)
         if len(node.children) == 3:
             is_par_expr = True
             for c, br in [(node.children[0], '('), (node.children[2], ')')]:
@@ -242,12 +250,10 @@ class Transformer(object):
                 return BinOp(node.children[1].additional_info,
                             self.visit_expr(node.children[0]),
                             self.visit_expr(node.children[2]))
-        # FIXME
-        if len(node.children) == 4:
-            return Call(
-                    self.visit_expr(node.children[0]),
-                    self.visit_expr(node.children[2]))
         raise NotImplementedError
+
+    def visit_csexpr(self, node):
+        pass # TODO
 
     def visit_atom(self, node):
         chnode = node.children[0]

@@ -55,6 +55,7 @@ def test_parse_if():
 
 
 def test_parse_fn_call():
+    """
     result = parser.parse('foo();')
     assert result == Block([Stmt(Call(Variable('foo'), []))])
 
@@ -74,8 +75,8 @@ def test_parse_fn_call():
 
     result = parser.parse('foo(f(x) + y);')
     assert result == Block([Stmt(Call(Variable('foo'), 
-        [BinOp('+', Call(Variable('f'), Variable('x')), Variable('y'))]))])
-
+        [BinOp('+', Call(Variable('f'), [Variable('x')]), Variable('y'))]))])
+    """
     result = parser.parse('foo(f(x), y);')
     assert result == Block([Stmt(Call(Variable('foo'), 
         [Call(Variable('f'), [Variable('x')]), Variable('y')]))])
