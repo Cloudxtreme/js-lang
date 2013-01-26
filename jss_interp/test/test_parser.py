@@ -94,6 +94,7 @@ def test_parse_fn_call():
         Variable('y'),
         ]))])
 
+
 def test_parse_binop():
     result = parser.parse('x = 1 + 2;')
     assert result == Block([Assignment('x', 
@@ -123,3 +124,8 @@ def test_parse_arithmetic():
     assert result == Block([Stmt(BinOp('>', Variable('x'), 
         BinOp('+', Variable('z'),
             BinOp('*', Variable('x'), Variable('y')))))])
+
+    result = parser.parse('(x + y) / x + 3;')
+    assert result == Block([Stmt(BinOp('+', 
+        BinOp('/', BinOp('+', Variable('x'), Variable('y')), Variable('x')),
+        ConstantNum(3.0)))])

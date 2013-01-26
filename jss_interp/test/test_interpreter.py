@@ -148,9 +148,36 @@ def test_binary_bool():
             assert frame.valuestack == []
 
 
+def test_while_loops():
+    frame = interpret_source('''
+    x = 0;
+    while (x < 10) {
+        x = x + 1;
+    }
+    ''')
+    assert frame.names == ['x']
+    assert frame.vars == [W_FloatObject(10.0)]
+    assert frame.valuestack == []
+
+
 def test_print(capfd):
     frame = interpret_source('print(3.78);')
     out, _ = capfd.readouterr()
     assert out == '3.78\n'
     assert frame.valuestack == []
+
+
+def test_arithmetic_expressions():
+    frame = interpret_source('''
+    x = 10;
+    y = 4 + x * 2;
+    z = (x + y) / x + 3;
+    ''')
+    x = 10.0
+    y = 4 + x * 2
+    z = (x + y) / x + 3
+    assert frame.names == ['x', 'y', 'z']
+    assert frame.vars == [W_FloatObject(x), W_FloatObject(y), W_FloatObject(z)]
+    assert frame.valuestack == []
+
     
