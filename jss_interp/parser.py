@@ -148,10 +148,9 @@ class Call(AstNode):
         self.args = args
 
     def compile(self, ctx):
-        # FIXME - this is all wrong for complex args
+        self.fn.compile(ctx)
         for arg in self.args:
             arg.compile(ctx)
-        self.fn.compile(ctx)
         ctx.emit(bytecode.CALL, len(self.args))
 
 

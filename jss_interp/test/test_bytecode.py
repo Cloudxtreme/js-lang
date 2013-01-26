@@ -83,16 +83,46 @@ def test_assignment():
     assert bytecode.constants == [13.4]
 
 
-def test_print():
-    bytecode = compile_ast(Call(Variable('print'), [ConstantNum(1.0)]))
+def test_call():
+    bytecode = compile_ast(Call(Variable('fn'), []))
     assert bytecode.code == to_code([
-        LOAD_CONSTANT, 0, 
         LOAD_VAR, 0,
+        CALL, 0,
+        RETURN, 0])
+    assert bytecode.names == ['fn']
+    assert bytecode.constants == []
+
+    bytecode = compile_ast(Call(Variable('fn'), [ConstantNum(1.0)]))
+    assert bytecode.code == to_code([
+        LOAD_VAR, 0,
+        LOAD_CONSTANT, 0, 
         CALL, 1,
         RETURN, 0])
-    assert bytecode.names == ['print']
+    assert bytecode.names == ['fn']
     assert bytecode.constants == [1.0]
 
+    bytecode = compile_ast(Call(Variable('fn'), [
+        Variable('z'), ConstantNum(1.0)]))
+    assert bytecode.code == to_code([
+        LOAD_VAR, 0,
+        LOAD_VAR, 1,
+        LOAD_CONSTANT, 0, 
+        CALL, 2,
+        RETURN, 0])
+    assert bytecode.names == ['fn', 'z']
+    assert bytecode.constants == [1.0]
+
+    bytecode = compile_ast(Call(Variable('fn'), [
+        Call(Variable('z'), []), ConstantNum(1.0)]))
+    assert bytecode.code == to_code([
+        LOAD_VAR, 0,
+        LOAD_VAR, 1,
+        CALL, 0,
+        LOAD_CONSTANT, 0, 
+        CALL, 2,
+        RETURN, 0])
+    assert bytecode.names == ['fn', 'z']
+    assert bytecode.constants == [1.0]
 
 def test_if():
     bytecode = compile_ast(If(ConstantNum(1.0), ConstantNum(2.0)))
