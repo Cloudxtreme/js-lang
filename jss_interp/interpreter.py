@@ -2,7 +2,7 @@
 
 from jss_interp import parser
 from jss_interp import bytecode
-from jss_interp.types import W_FloatObject, OperationalError
+from jss_interp.base_objects import W_FloatObject, OperationalError
 from jss_interp.builtins import BUILTINS
 
 

@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 
-from jss_interp.types import W_Root
+from jss_interp.base_objects import W_Root
 
 
 class W_BuilinFn(W_Root):
