@@ -84,11 +84,11 @@ def test_assignment():
 
 
 def test_print():
-    bytecode = compile_ast(Call(Variable('print'), ConstantNum(1.0)))
+    bytecode = compile_ast(Call(Variable('print'), [ConstantNum(1.0)]))
     assert bytecode.code == to_code([
         LOAD_CONSTANT, 0, 
         LOAD_VAR, 0,
-        CALL, 0,
+        CALL, 1,
         RETURN, 0])
     assert bytecode.names == ['print']
     assert bytecode.constants == [1.0]
