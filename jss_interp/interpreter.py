@@ -92,7 +92,7 @@ def execute(frame, bc):
             for _ in xrange(arg):
                 arg_list.append(frame.pop())
             fn = frame.pop()
-            frame.push(fn.call(*arg_list))
+            frame.push(fn.call(arg_list))
 
         elif c == bytecode.RETURN:
             return
