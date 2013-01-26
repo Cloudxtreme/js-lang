@@ -85,6 +85,14 @@ def test_parse_fn_call():
         Call(Variable('f'), [Variable('x')]), 
         Variable('y')]))])
 
+    result = parser.parse('foo(1, f(x), y, z, y);')
+    assert result == Block([Stmt(Call(Variable('foo'), [
+        ConstantNum(1.0), 
+        Call(Variable('f'), [Variable('x')]), 
+        Variable('y'),
+        Variable('z'),
+        Variable('y'),
+        ]))])
 
 def test_parse_binop():
     result = parser.parse('x = 1 + 2;')
