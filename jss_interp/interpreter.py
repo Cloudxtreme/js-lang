@@ -71,9 +71,11 @@ def execute(frame, bc):
             pc = arg
 
         elif c == bytecode.CALL:
+            arg_list = []
+            for _ in xrange(arg):
+                arg_list.append(frame.pop())
             fn = frame.pop()
-            arg = frame.pop()
-            frame.push(fn.call(arg))
+            frame.push(fn.call(*arg_list))
 
         elif c == bytecode.RETURN:
             return

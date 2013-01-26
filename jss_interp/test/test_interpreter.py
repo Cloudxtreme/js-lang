@@ -123,9 +123,9 @@ def test_binary_bool():
 
 def test_print(capfd):
     bc = ByteCode(to_code([
-        LOAD_CONSTANT, 0,
         LOAD_VAR, 0,
-        CALL, 0,
+        LOAD_CONSTANT, 0,
+        CALL, 1,
         DISCARD_TOP, 0,
         RETURN, 0]), [3.78], ['print'])
     frame = interpret(bc)
