@@ -86,7 +86,7 @@ def execute(frame, bc):
 
 def main(source):
     try:
-        ast = parser.parse(source)
+        interpret_source(source)
     except parser.LexerError as e:
         print 'LexerError', e
         return 1
@@ -94,12 +94,17 @@ def main(source):
         print 'ParseError', e
         return 1
     else:
-        bc = bytecode.compile_ast(ast)
-        interpret(bc)
         return 0
+
+
+def interpret_source(source):
+    ast = parser.parse(source)
+    bc = bytecode.compile_ast(ast)
+    return interpret(bc)
 
 
 def interpret(bc):
     frame = Frame(bc)
     execute(frame, bc)
     return frame
+

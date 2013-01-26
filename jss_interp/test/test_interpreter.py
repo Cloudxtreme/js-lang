@@ -3,7 +3,7 @@
 from jss_interp.bytecode import to_code, ByteCode, \
         LOAD_CONSTANT, RETURN, LOAD_VAR, ASSIGN, DISCARD_TOP, BINARY_ADD, \
         BINARY_EQ, BINARY_LT, JUMP_IF_FALSE, JUMP_ABSOLUTE, CALL
-from jss_interp.interpreter import Frame, interpret
+from jss_interp.interpreter import Frame, interpret, interpret_source
 from jss_interp.types import W_FloatObject, W_BoolObject
 
 
@@ -34,38 +34,26 @@ def test_load_constant():
     frame = interpret(bc)
     assert frame.valuestack == [W_FloatObject(12.2)]
     assert frame.vars == []
-
+    
 
 def test_assignment():
-    bc = ByteCode(to_code([
-        LOAD_CONSTANT, 0,
-        ASSIGN, 0,
-        RETURN, 0]), 
-        [2.71], ['x'])
-    frame = interpret(bc)
+    frame = interpret_source('x = 2.71;')
     assert frame.valuestack == []
     assert frame.vars == [W_FloatObject(2.71)]
 
 
 def test_load_variable():
-    bc = ByteCode(to_code([
-        LOAD_CONSTANT, 0,
-        ASSIGN, 0,
-        LOAD_VAR, 0,
-        RETURN, 0]), 
-        [2.71], ['x'])
-    frame = interpret(bc)
-    assert frame.valuestack == [W_FloatObject(2.71)]
-    assert frame.vars == [W_FloatObject(2.71)]
+    frame = interpret_source('''
+    x = 2.71;
+    y = x;
+    ''')
+    assert frame.valuestack == []
+    assert frame.names == ['x', 'y']
+    assert frame.vars == [W_FloatObject(2.71), W_FloatObject(2.71)]
 
 
 def test_dicard_top():
-    bc = ByteCode(to_code([
-        LOAD_CONSTANT, 0,
-        DISCARD_TOP, 0,
-        RETURN, 0]), 
-        [2.71], [])
-    frame = interpret(bc)
+    frame = interpret_source('2.71;')
     assert frame.valuestack == []
     assert frame.vars == []
 
@@ -94,41 +82,74 @@ def test_jumps():
     assert frame.valuestack == [W_FloatObject(-1.0)]
 
 
+def test_if():
+    frame = interpret_source('''
+    if (0) {
+        x = 10;
+    }''')
+    assert frame.names == ['x']
+    assert frame.vars == [None]
+    assert frame.valuestack == []
+
+    frame = interpret_source('''
+    if (1) {
+        x = 10;
+    }''')
+    assert frame.names == ['x']
+    assert frame.vars == [W_FloatObject(10.0)]
+    assert frame.valuestack == []
+
+
+def test_while():
+    frame = interpret_source('''
+    while (0) {
+        x = 10;
+    }''')
+    assert frame.names == ['x']
+    assert frame.vars == [None]
+    assert frame.valuestack == []
+
+    frame = interpret_source('''
+    x = 1;
+    y = 10;
+    while (x) {
+        x = 0;
+        y = 100;
+    }''')
+    assert frame.names == ['x', 'y']
+    assert frame.vars == [W_FloatObject(0.0), W_FloatObject(100.0)]
+    assert frame.valuestack == []
+
+
 def test_binary_add():
-    bc = ByteCode(to_code([
-        LOAD_CONSTANT, 0,
-        LOAD_CONSTANT, 1,
-        BINARY_ADD, 0,
-        RETURN, 0]),
-        [1.0, 2.5], [])
-    frame = interpret(bc)
-    assert frame.valuestack == [W_FloatObject(3.5)]
+    frame = interpret_source('''
+    x = 1 + 2.5;
+    ''')
+    assert frame.names == ['x']
+    assert frame.vars == [W_FloatObject(3.5)]
+    assert frame.valuestack == []
 
 
 def test_binary_bool():
     for binary_op, check_fn in [
-            (BINARY_LT, lambda x, y: x < y),
-            (BINARY_EQ, lambda x, y: x == y),
+            ('<', lambda x, y: x < y),
+            ('==', lambda x, y: x == y),
             ]:
         for x, y in [(1.0, 2.5), (1.0, 1.0), (1.0, -1.0)]:
-            bc = ByteCode(to_code([
-                LOAD_CONSTANT, 0,
-                LOAD_CONSTANT, 1,
-                binary_op, 0,
-                RETURN, 0]),
-                [x, y], [])
-            frame = interpret(bc)
-            assert frame.valuestack == [W_BoolObject(check_fn(x, y))]
+            frame = interpret_source('''
+            x = %s;
+            y = %s;
+            res = x %s y;
+            ''' % (x, y, binary_op))
+            assert frame.names == ['x', 'y', 'res']
+            assert frame.vars == [
+                    W_FloatObject(x), W_FloatObject(y),
+                    W_BoolObject(check_fn(x, y))]
+            assert frame.valuestack == []
 
 
 def test_print(capfd):
-    bc = ByteCode(to_code([
-        LOAD_VAR, 0,
-        LOAD_CONSTANT, 0,
-        CALL, 1,
-        DISCARD_TOP, 0,
-        RETURN, 0]), [3.78], ['print'])
-    frame = interpret(bc)
+    frame = interpret_source('print(3.78);')
     out, _ = capfd.readouterr()
     assert out == '3.78\n'
     assert frame.valuestack == []
