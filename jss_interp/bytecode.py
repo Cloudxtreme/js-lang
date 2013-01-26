@@ -5,15 +5,22 @@ old_globals = dict(globals())
 
 LOAD_CONSTANT, LOAD_VAR, ASSIGN, \
 DISCARD_TOP, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE, \
-BINARY_ADD, BINARY_SUB, BINARY_EQ, BINARY_LT, \
+BINARY_ADD, BINARY_SUB, BINARY_MUL, BINARY_DIV, BINARY_EQ, BINARY_LT, \
 CALL \
-= range(12)
+= range(14)
 
 bytecodes = dict((globals()[f], f) for f in globals() 
         if f not in old_globals and f != 'old_globals')
 
 
-BINOP = {'+': BINARY_ADD, '-': BINARY_SUB, '==': BINARY_EQ, '<': BINARY_LT}
+BINOP = {
+        '+': BINARY_ADD, 
+        '-': BINARY_SUB, 
+        '*': BINARY_MUL, 
+        '/': BINARY_DIV, 
+        '==': BINARY_EQ, 
+        '<': BINARY_LT,
+        }
 
 
 class CompilerContext(object):

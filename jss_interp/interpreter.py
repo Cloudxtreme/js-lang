@@ -47,11 +47,28 @@ def execute(frame, bc):
         elif c == bytecode.DISCARD_TOP:
             frame.pop()
 
+        # TODO - remove repition
+
         elif c == bytecode.BINARY_ADD:
             right = frame.pop()
             left = frame.pop()
             w_res = left.add(right)
             frame.push(w_res)
+
+        elif c == bytecode.BINARY_SUB:
+            right = frame.pop()
+            left = frame.pop()
+            frame.push(left.sub(right))
+
+        elif c == bytecode.BINARY_MUL:
+            right = frame.pop()
+            left = frame.pop()
+            frame.push(left.mul(right))
+
+        elif c == bytecode.BINARY_DIV:
+            right = frame.pop()
+            left = frame.pop()
+            frame.push(left.div(right))
 
         elif c == bytecode.BINARY_LT:
             right = frame.pop()

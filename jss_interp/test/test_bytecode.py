@@ -3,8 +3,9 @@
 from jss_interp.parser import ConstantNum, Variable, Assignment, Stmt, Block, \
         BinOp, Call, If, While
 from jss_interp.bytecode import compile_ast, dis, to_code, \
-        LOAD_CONSTANT, RETURN, LOAD_VAR, ASSIGN, DISCARD_TOP, BINARY_ADD, \
-        BINARY_EQ, JUMP_IF_FALSE, JUMP_ABSOLUTE, CALL
+        LOAD_CONSTANT, RETURN, LOAD_VAR, ASSIGN, DISCARD_TOP, \
+        BINARY_ADD, BINARY_EQ, BINARY_LT, BINARY_MUL, BINARY_SUB, BINARY_DIV, \
+        JUMP_IF_FALSE, JUMP_ABSOLUTE, CALL
 
 
 def test_dis():
@@ -52,23 +53,31 @@ def test_block():
 
 
 def test_binop():
-    bytecode = compile_ast(BinOp('+', Variable('x'), Variable('y')))
-    assert bytecode.code == to_code([
-            LOAD_VAR, 0,
-            LOAD_VAR, 1, 
-            BINARY_ADD, 0,
-            RETURN, 0])
-    assert bytecode.names == ['x', 'y']
-    assert bytecode.constants == []
+    for op, bc in [
+            ('+', BINARY_ADD), 
+            ('==', BINARY_EQ),
+            ('<', BINARY_LT),
+            ('-', BINARY_SUB),
+            ('*', BINARY_MUL),
+            ('/', BINARY_DIV),
+            ]:
+        bytecode = compile_ast(BinOp(op, Variable('x'), Variable('y')))
+        assert bytecode.code == to_code([
+                LOAD_VAR, 0,
+                LOAD_VAR, 1, 
+                bc, 0,
+                RETURN, 0])
+        assert bytecode.names == ['x', 'y']
+        assert bytecode.constants == []
 
-    bytecode = compile_ast(BinOp('==', ConstantNum(2.0), Variable('y')))
-    assert bytecode.code == to_code([
-            LOAD_CONSTANT, 0,
-            LOAD_VAR, 0, 
-            BINARY_EQ, 0,
-            RETURN, 0])
-    assert bytecode.names == ['y']
-    assert bytecode.constants == [2.0]
+        bytecode = compile_ast(BinOp(op, ConstantNum(2.0), Variable('y')))
+        assert bytecode.code == to_code([
+                LOAD_CONSTANT, 0,
+                LOAD_VAR, 0, 
+                bc, 0,
+                RETURN, 0])
+        assert bytecode.names == ['y']
+        assert bytecode.constants == [2.0]
 
 
 def test_assignment():
