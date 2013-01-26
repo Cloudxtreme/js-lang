@@ -233,9 +233,10 @@ class Transformer(object):
                 return self.visit_expr(node.children[0])
         if node.symbol == 'call':
             fn = self.visit_expr(node.children[0])
-            if len(node.children) == 3:
+            if len(node.children) == 4:
                 args = self.visit_csexpr(node.children[2])
             else:
+                assert len(node.children) == 3
                 args = []
             return Call(fn, args)
         if len(node.children) == 3:
@@ -253,7 +254,13 @@ class Transformer(object):
         raise NotImplementedError
 
     def visit_csexpr(self, node):
-        pass # TODO
+        ''' Returns a list of nodes (comma-separated "expr")
+        '''
+        assert len(node.children) in (1, 3)
+        expr_list = [self.visit_expr(node.children[0])]
+        if len(node.children) == 3:
+            expr_list.extend(self.visit_csexpr(node.children[2]))
+        return expr_list
 
     def visit_atom(self, node):
         chnode = node.children[0]
