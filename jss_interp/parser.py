@@ -299,12 +299,16 @@ class Transformer(object):
             return Call(fn, args)
         elif node.symbol == 'fndef':
             fn_name = node.children[1].additional_info
-            if len(node.children) == 6:
+            if len(node.children) == 6: # foo() {};
                 return FnDef(fn_name, [], Block([]))
-            elif len(node.children) == 7:
-                return FnDef(fn_name, self.visit_csvar(node.children[3]),
-                        Block([]))
-            elif len(node.children) == 8:
+            elif len(node.children) == 7: # foo(x) {}; or foo() {x;}
+                if node.children[3].symbol == 'csvar':
+                    return FnDef(fn_name, self.visit_csvar(node.children[3]),
+                            Block([]))
+                else:
+                    stmts = self._grab_stmts(node.children[5])
+                    return FnDef(fn_name, [], Block(stmts))
+            elif len(node.children) == 8: # foo(x) {x;}
                 stmts = self._grab_stmts(node.children[6])
                 return FnDef(fn_name, self.visit_csvar(node.children[3]),
                         Block(stmts))
