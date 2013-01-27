@@ -4,7 +4,7 @@ import pytest
 
 from jss_interp import parser
 from jss_interp.parser import Block, Stmt, Variable, ConstantNum, While, \
-        Assignment, If, Call, BinOp
+        Assignment, If, Call, BinOp, FnDef
 
 
 def test_parse_variable():
@@ -129,3 +129,17 @@ def test_parse_arithmetic():
     assert result == Block([Stmt(BinOp('+', 
         BinOp('/', BinOp('+', Variable('x'), Variable('y')), Variable('x')),
         ConstantNum(3.0)))])
+
+
+def test_parse_fn_def():
+    result = parser.parse('function foo() { }')
+    assert result == Block([FnDef('foo', ['x'], Block([]))])
+
+    result = parser.parse('function foo(x) { x + y; }')
+    assert result == Block([FnDef('foo', ['x'], 
+        Block([Stmt(BinOp('+', Variable('x'), Variable('y')))]))])
+
+    result = parser.parse('function foo(x, y, z) { x + y; }')
+    assert result == Block([FnDef('foo', ['x', 'y', 'z'], 
+        Block([Stmt(BinOp('+', Variable('x'), Variable('y')))]))])
+

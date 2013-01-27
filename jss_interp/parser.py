@@ -190,6 +190,17 @@ class While(AstNode):
         ctx.data[jump_pos] = len(ctx.data)
 
 
+class FnDef(AstNode):
+    ''' Function definition
+    '''
+    _fields = ('name', 'arg_list', 'body')
+
+    def __init__(self, name, arg_list, body):
+        self.name = name
+        self.arg_list = arg_list
+        self.body = body
+
+
 class Transformer(object):
     ''' Transforms AST from the obscure format given to us by the ebnfparser
     to something easier to work with
