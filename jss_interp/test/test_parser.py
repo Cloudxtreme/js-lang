@@ -4,7 +4,7 @@ import pytest
 
 from jss_interp import parser
 from jss_interp.parser import Block, Stmt, Variable, ConstantNum, While, \
-        Assignment, If, Call, BinOp, FnDef
+        Assignment, If, Call, BinOp, FnDef, Return
 
 
 def test_parse_variable():
@@ -145,4 +145,15 @@ def test_parse_fn_def():
     result = parser.parse('function foo(x, y, z) { x + y; };')
     assert result == Block([Stmt(FnDef('foo', ['x', 'y', 'z'], 
         Block([Stmt(BinOp('+', Variable('x'), Variable('y')))])))])
+
+
+def test_parser_return():
+    result = parser.parse('function foo(x, y, z) { return; };')
+    assert result == Block([Stmt(FnDef('foo', ['x', 'y', 'z'], 
+        Block([Return()])))])
+
+    result = parser.parse('function foo(x, y, z) { return x + y; };')
+    assert result == Block([Stmt(FnDef('foo', ['x', 'y', 'z'], 
+        Block([Return(BinOp('+', Variable('x'), Variable('y')))])))])
+
 

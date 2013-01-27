@@ -228,6 +228,20 @@ class FnDef(AstNode):
         ctx.emit(bytecode.ASSIGN, ctx.register_var(self.name))
 
 
+class Return(AstNode):
+    ''' Return statement
+    '''
+    _fields = ('expr',)
+
+    def __init__(self, expr=None):
+        self.expr = expr
+
+    def compile(self, ctx):
+        if self.expr:
+            self.expr.compile(ctx)
+        ctx.emit(bytecode.RETURN, 0)
+
+
 class Transformer(object):
     ''' Transforms AST from the obscure format given to us by the ebnfparser
     to something easier to work with
@@ -305,7 +319,7 @@ class Transformer(object):
             raise NotImplementedError
 
     def visit_csexpr(self, node):
-        ''' Returns a list of nodes (comma-separated "expr")
+        ''' Return a list of nodes (comma-separated "expr")
         '''
         assert len(node.children) in (1, 3)
         expr_list = [self.visit_expr(node.children[0])]
@@ -314,7 +328,7 @@ class Transformer(object):
         return expr_list
 
     def visit_csvar(self, node):
-        ''' Returns a list of variable names (comma-separated VARIABLE)
+        ''' Return a list of variable names (comma-separated VARIABLE)
         '''
         assert len(node.children) in (1, 3)
         assert node.children[0].symbol == 'VARIABLE'
