@@ -239,7 +239,6 @@ class Return(AstNode):
     def compile(self, ctx):
         if self.expr:
             self.expr.compile(ctx)
-        ctx.emit(bytecode.RETURN, 0)
 
 
 class Transformer(object):
@@ -261,20 +260,28 @@ class Transformer(object):
         return Block(stmts)
 
     def visit_stmt(self, node):
-        if len(node.children) == 2:
+        if len(node.children) == 2 and node.children[0].symbol == 'expr':
             return Stmt(self.visit_expr(node.children[0]))
         head_info = node.children[0].additional_info
-        if len(node.children) == 4:
-            return Assignment(head_info, self.visit_expr(node.children[2]))
         if head_info == 'while':
             cond = self.visit_expr(node.children[2])
             stmts = self._grab_stmts(node.children[5])
             return While(cond, Block(stmts))
-        if head_info == 'if':
+        elif head_info == 'if':
             cond = self.visit_expr(node.children[2])
             stmts = self._grab_stmts(node.children[5])
             return If(cond, Block(stmts))
-        raise NotImplementedError
+        elif head_info == 'return':
+            if len(node.children) == 2:
+                return Return()
+            elif len(node.children) == 3:
+                return Return(self.visit_expr(node.children[1]))
+            else:
+                raise NotImplementedError
+        elif len(node.children) == 4:
+            return Assignment(head_info, self.visit_expr(node.children[2]))
+        else:
+            raise NotImplementedError
 
     def visit_expr(self, node):
         if len(node.children) == 1:
