@@ -142,6 +142,10 @@ def test_parse_fn_def():
     result = parser.parse('function foo(x){};')
     assert result == Block([Stmt(FnDef('foo', ['x'], Block([])))])
 
+    result = parser.parse('function foo(){x;};')
+    assert result == Block([Stmt(FnDef('foo', [], Block([
+        Stmt(Variable('x'))])))])
+
     result = parser.parse('function foo(x, y, z) { x + y; };')
     assert result == Block([Stmt(FnDef('foo', ['x', 'y', 'z'], 
         Block([Stmt(BinOp('+', Variable('x'), Variable('y')))])))])
