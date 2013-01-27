@@ -180,3 +180,25 @@ def test_arithmetic_expressions():
     assert frame.valuestack == []
 
     
+def test_fn_noop():
+    frame = interpret_source('''
+    function foo() {};
+    foo();
+    ''')
+    assert frame.names == ['foo']
+    assert len(frame.vars) == 1
+    assert frame.valuestack == 0
+
+
+def test_fn_print(capfd):
+    frame = interpret_source('''
+    function foo() {
+        print(1);
+    };
+    foo();
+    ''')
+    out, _ = capfd.readouterr()
+    assert out == '1.0\n'
+    assert frame.names == ['foo']
+    assert len(frame.vars) == 1
+    assert frame.valuestack == 0
