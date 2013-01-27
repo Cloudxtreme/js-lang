@@ -30,8 +30,16 @@ statement: expr ";"
 expr: additive COMP_OPER expr | additive;
 additive: multitive ADD_OPER additive | multitive;
 multitive: call MULT_OPER multitive | call;
-call: primary "(" csexpr ")" | primary "(" ")" | primary;
+
+call: fndef "(" csexpr ")" | fndef "(" ")" | fndef;
 csexpr: expr "," csexpr | expr;
+
+fndef: "function" VARIABLE "(" csvar ")" "{" statement* "}" 
+    |  "function" VARIABLE "(" ")" "{" statement* "}" 
+    |  "function" VARIABLE "(" ")" "{" "}" 
+    | primary;
+csvar: VARIABLE "," csvar | VARIABLE;
+
 primary: "(" expr ")" | atom;
 atom: FLOAT_NUMBER | VARIABLE;
 
