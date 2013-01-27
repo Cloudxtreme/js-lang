@@ -2,7 +2,8 @@
 
 from jss_interp import parser
 from jss_interp import bytecode
-from jss_interp.base_objects import W_FloatObject, OperationalError
+from jss_interp.base_objects import OperationalError, \
+        W_FloatObject, W_Function
 from jss_interp.builtins import BUILTINS
 
 
@@ -27,8 +28,11 @@ def execute(frame, bc):
         arg = ord(code[pc + 1])
         pc += 2
 
-        if c == bytecode.LOAD_CONSTANT:
-            frame.push(W_FloatObject(bc.constants[arg]))
+        if c == bytecode.LOAD_CONSTANT_FLOAT:
+            frame.push(W_FloatObject(bc.constants_float[arg]))
+
+        elif c == bytecode.LOAD_CONSTANT_FN:
+            frame.push(W_Function(bc.constants_fn[arg]))
 
         elif c == bytecode.LOAD_VAR:
             # TODO - maybe move this logic to some other place?

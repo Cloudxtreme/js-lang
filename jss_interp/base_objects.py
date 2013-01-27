@@ -5,6 +5,10 @@
 # does not really implement javascript
 
 
+class OperationalError(Exception):
+    pass
+
+
 class W_Root(object):
     def is_true(self):
         raise NotImplementedError
@@ -81,7 +85,7 @@ class W_FloatObject(W_Numeric):
         return type(self) == type(other) and self.floatval == other.floatval
 
 
-class OperationalError(Exception):
-    pass
-
+class W_Function(W_Root):
+    def __init__(self, bytecode):
+        self.bytecode = bytecode
 

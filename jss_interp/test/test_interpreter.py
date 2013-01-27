@@ -1,13 +1,13 @@
 # -*- encoding: utf-8 -*-
 
 from jss_interp.bytecode import to_code, ByteCode, \
-        LOAD_CONSTANT, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE
+        LOAD_CONSTANT_FLOAT, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE
 from jss_interp.interpreter import Frame, interpret, interpret_source
 from jss_interp.base_objects import W_FloatObject, W_BoolObject
 
 
 def test_frame():
-    bc = ByteCode('', [], ['x', 'y'])
+    bc = ByteCode('', ['x', 'y'], [], [])
     frame = Frame(bc)
     assert len(frame.vars) == 2
     assert len(frame.valuestack) == 0
@@ -27,9 +27,9 @@ def test_frame():
 
 def test_load_constant():
     bc = ByteCode(to_code([
-        LOAD_CONSTANT, 0,
+        LOAD_CONSTANT_FLOAT, 0,
         RETURN, 0]), 
-        [12.2], [])
+        [], [12.2], [])
     frame = interpret(bc)
     assert frame.valuestack == [W_FloatObject(12.2)]
     assert frame.vars == []
@@ -59,24 +59,24 @@ def test_dicard_top():
 
 def test_jumps():
     bc = ByteCode(to_code([
-        LOAD_CONSTANT, 0,
+        LOAD_CONSTANT_FLOAT, 0,
         JUMP_IF_FALSE, 8,
-        LOAD_CONSTANT, 1,
+        LOAD_CONSTANT_FLOAT, 1,
         JUMP_ABSOLUTE, 10,
-        LOAD_CONSTANT, 2,
+        LOAD_CONSTANT_FLOAT, 2,
         RETURN, 0]),
-        [0.0, -1.0, 1.0], [])
+        [], [0.0, -1.0, 1.0], [])
     frame = interpret(bc)
     assert frame.valuestack == [W_FloatObject(1.0)]
 
     bc = ByteCode(to_code([
-        LOAD_CONSTANT, 0,
+        LOAD_CONSTANT_FLOAT, 0,
         JUMP_IF_FALSE, 8,
-        LOAD_CONSTANT, 1,
+        LOAD_CONSTANT_FLOAT, 1,
         JUMP_ABSOLUTE, 10,
-        LOAD_CONSTANT, 2,
+        LOAD_CONSTANT_FLOAT, 2,
         RETURN, 0]),
-        [1.0, -1.0, 2.0], [])
+        [], [1.0, -1.0, 2.0], [])
     frame = interpret(bc)
     assert frame.valuestack == [W_FloatObject(-1.0)]
 

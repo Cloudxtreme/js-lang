@@ -114,7 +114,8 @@ class ConstantNum(AstNode):
         self.floatval = floatval
 
     def compile(self, ctx):
-        ctx.emit(bytecode.LOAD_CONSTANT, ctx.register_constant(self.floatval))
+        ctx.emit(bytecode.LOAD_CONSTANT_FLOAT, 
+                 ctx.register_constant_float(self.floatval))
 
 
 class BinOp(AstNode):
@@ -222,9 +223,8 @@ class FnDef(AstNode):
         self.body = body
 
     def compile(self, ctx):
-        ctx.emit(bytecode.LOAD_CONSTANT, 
-                ctx.register_constant(ctx.compile_ast(self.body)))
-        ctx.emit(bytecode.MAKE_FN, 0)
+        ctx.emit(bytecode.LOAD_CONSTANT_FN, 
+                 ctx.register_constant_fn(ctx.compile_ast(self.body)))
         ctx.emit(bytecode.ASSIGN, ctx.register_var(self.name))
 
 

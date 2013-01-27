@@ -3,11 +3,11 @@
 
 old_globals = dict(globals())
 
-LOAD_CONSTANT, LOAD_VAR, ASSIGN, \
+LOAD_CONSTANT_FLOAT, LOAD_CONSTANT_FN, LOAD_VAR, ASSIGN, \
 DISCARD_TOP, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE, \
 BINARY_ADD, BINARY_SUB, BINARY_MUL, BINARY_DIV, BINARY_EQ, BINARY_LT, \
 CALL, MAKE_FN \
-= range(15)
+= range(16)
 
 bytecodes = dict((globals()[f], f) for f in globals() 
         if f not in old_globals and f != 'old_globals')
@@ -26,13 +26,18 @@ BINOP = {
 class CompilerContext(object):
     def __init__(self):
         self.data = []
-        self.constants = []
+        self.constants_float = []
+        self.constants_fn = []
         self.names = []
         self.names_to_numbers = {}
 
-    def register_constant(self, v):
-        self.constants.append(v)
-        return len(self.constants) - 1
+    def register_constant_float(self, v):
+        self.constants_float.append(v)
+        return len(self.constants_float) - 1
+
+    def register_constant_fn(self, v):
+        self.constants_fn.append(v)
+        return len(self.constants_fn) - 1
 
     def register_var(self, name):
         try:
@@ -47,7 +52,10 @@ class CompilerContext(object):
         self.data.append(arg)
 
     def create_bytecode(self):
-        return ByteCode(to_code(self.data), self.constants[:], self.names[:])
+        return ByteCode(
+                to_code(self.data), 
+                self.names[:], 
+                self.constants_float[:], self.constants_fn[:])
 
     @classmethod
     def compile_ast(cls, astnode):
@@ -64,10 +72,11 @@ compile_ast = CompilerContext.compile_ast
 
 
 class ByteCode(object):
-    def __init__(self, code, constants, names):
+    def __init__(self, code, names, constants_float, constants_fn):
         self.code = code
-        self.constants = constants
         self.names = names
+        self.constants_float = constants_float
+        self.constants_fn = constants_fn
 
 
 def dis(code):
