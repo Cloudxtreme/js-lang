@@ -169,6 +169,7 @@ def test_fn_def():
     expected_code = to_code([
         LOAD_CONSTANT_FN, 0,
         ASSIGN, 0,
+        LOAD_CONSTANT_FN, 0,
         RETURN, 0])
     expected_inner_bytecode = to_code([RETURN, 0])
 
@@ -186,6 +187,7 @@ def test_fn_def():
     expected_code = to_code([
         LOAD_CONSTANT_FN, 0,
         ASSIGN, 0,
+        LOAD_CONSTANT_FN, 0,
         RETURN, 0])
     expected_inner_bytecode = to_code([
         LOAD_VAR, 0,
@@ -210,6 +212,7 @@ def test_return():
     expected_code = to_code([
         LOAD_CONSTANT_FN, 0,
         ASSIGN, 0,
+        LOAD_CONSTANT_FN, 0,
         RETURN, 0])
     expected_inner_bytecode = to_code([
         LOAD_VAR, 0,
@@ -231,6 +234,7 @@ def test_return():
     expected_code = to_code([
         LOAD_CONSTANT_FN, 0,
         ASSIGN, 0,
+        LOAD_CONSTANT_FN, 0,
         RETURN, 0])
     expected_inner_bytecode = to_code([
         LOAD_VAR, 0,

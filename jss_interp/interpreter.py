@@ -3,7 +3,7 @@
 from jss_interp import parser
 from jss_interp import bytecode
 from jss_interp.base_objects import OperationalError, \
-        W_FloatObject, W_Function
+        W_FloatObject, W_Function, W_BuilinFunction
 from jss_interp.builtins import BUILTINS
 
 
@@ -96,13 +96,38 @@ def execute(frame, bc):
             for _ in xrange(arg):
                 arg_list.append(frame.pop())
             fn = frame.pop()
-            frame.push(fn.call(arg_list))
+            if isinstance(fn, W_BuilinFunction):
+                frame.push(fn.call(arg_list))
+            else:
+                frame.push(call_fn(fn, arg_list))
 
         elif c == bytecode.RETURN:
-            return
+            if arg:
+                return frame.pop()
+            else:
+                return None # TODO - undefined
 
         else:
             assert False
+
+
+def call_fn(fn, arg_list):
+    # TODO - pass arg_list
+    frame = Frame(fn.bytecode)
+    return execute(frame, fn.bytecode)
+
+
+def interpret(bc):
+    #print bytecode.dis(bc.code)
+    frame = Frame(bc)
+    execute(frame, bc)
+    return frame
+
+
+def interpret_source(source):
+    ast = parser.parse(source)
+    bc = bytecode.compile_ast(ast)
+    return interpret(bc)
 
 
 def main(source):
@@ -116,16 +141,3 @@ def main(source):
         return 1
     else:
         return 0
-
-
-def interpret_source(source):
-    ast = parser.parse(source)
-    bc = bytecode.compile_ast(ast)
-    return interpret(bc)
-
-
-def interpret(bc):
-    frame = Frame(bc)
-    execute(frame, bc)
-    return frame
-

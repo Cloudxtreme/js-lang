@@ -85,6 +85,11 @@ class W_FloatObject(W_Numeric):
         return type(self) == type(other) and self.floatval == other.floatval
 
 
+class W_BuilinFunction(W_Root):
+    def call(self, arg_list):
+        raise NotImplementedError
+
+
 class W_Function(W_Root):
     def __init__(self, bytecode):
         self.bytecode = bytecode

@@ -187,7 +187,7 @@ def test_fn_noop():
     ''')
     assert frame.names == ['foo']
     assert len(frame.vars) == 1
-    assert frame.valuestack == 0
+    assert frame.valuestack == []
 
 
 def test_fn_print(capfd):
@@ -201,4 +201,4 @@ def test_fn_print(capfd):
     assert out == '1.0\n'
     assert frame.names == ['foo']
     assert len(frame.vars) == 1
-    assert frame.valuestack == 0
+    assert frame.valuestack == []
