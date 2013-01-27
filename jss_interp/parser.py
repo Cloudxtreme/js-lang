@@ -22,25 +22,39 @@ VARIABLE: "[a-zA-Z_][a-zA-Z0-9_]*";
 
 main: statement* [EOF];
 
-statement: expr ";" 
+statement: 
+      expr ";" 
     | VARIABLE "=" expr ";" 
     | "while" "(" expr ")" "{" statement* "}" 
-    | "if" "(" expr ")" "{" statement* "}";
+    | "if" "(" expr ")" "{" statement* "}"
+    | "return" expr ";"
+    | "return" ";";
 
-expr: additive COMP_OPER expr | additive;
-additive: multitive ADD_OPER additive | multitive;
-multitive: call MULT_OPER multitive | call;
+expr: 
+    additive COMP_OPER expr | additive;
+additive: 
+    multitive ADD_OPER additive | multitive;
+multitive: 
+    call MULT_OPER multitive | call;
 
-call: fndef "(" csexpr ")" | fndef "(" ")" | fndef;
-csexpr: expr "," csexpr | expr;
+call: 
+    fndef "(" csexpr ")" | fndef "(" ")" | fndef;
+csexpr: 
+    expr "," csexpr | expr;
 
-fndef: "function" VARIABLE "(" csvar ")" "{" statement* "}" 
-    |  "function" VARIABLE "(" ")" "{" statement* "}" 
+fndef: 
+      "function" VARIABLE "(" csvar ")" "{" statement* "}" 
+    | "function" VARIABLE "(" ")" "{" statement* "}" 
     | primary;
-csvar: VARIABLE "," csvar | VARIABLE;
+csvar: 
+    VARIABLE "," csvar | VARIABLE;
 
-primary: "(" expr ")" | atom;
-atom: FLOAT_NUMBER | VARIABLE;
+primary: 
+      "(" expr ")" 
+    | atom;
+atom:
+      FLOAT_NUMBER 
+    | VARIABLE;
 
 '''
 
