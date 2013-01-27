@@ -36,7 +36,6 @@ csexpr: expr "," csexpr | expr;
 
 fndef: "function" VARIABLE "(" csvar ")" "{" statement* "}" 
     |  "function" VARIABLE "(" ")" "{" statement* "}" 
-    |  "function" VARIABLE "(" ")" "{" "}" 
     | primary;
 csvar: VARIABLE "," csvar | VARIABLE;
 
@@ -249,7 +248,7 @@ class Transformer(object):
                 return self.visit_atom(node)
             else:
                 return self.visit_expr(node.children[0])
-        if node.symbol == 'call':
+        elif node.symbol == 'call':
             fn = self.visit_expr(node.children[0])
             if len(node.children) == 4:
                 args = self.visit_csexpr(node.children[2])
@@ -257,7 +256,20 @@ class Transformer(object):
                 assert len(node.children) == 3
                 args = []
             return Call(fn, args)
-        if len(node.children) == 3:
+        elif node.symbol == 'fndef':
+            fn_name = node.children[1].additional_info
+            if len(node.children) == 6:
+                return FnDef(fn_name, [], Block([]))
+            elif len(node.children) == 7:
+                return FnDef(fn_name, self.visit_csvar(node.children[3]),
+                        Block([]))
+            elif len(node.children) == 8:
+                stmts = self._grab_stmts(node.children[6])
+                return FnDef(fn_name, self.visit_csvar(node.children[3]),
+                        Block(stmts))
+            else:
+                raise NotImplementedError
+        elif len(node.children) == 3:
             is_par_expr = True
             for c, br in [(node.children[0], '('), (node.children[2], ')')]:
                 if not (isinstance(c, Symbol) and c.additional_info == br):
@@ -269,7 +281,8 @@ class Transformer(object):
                 return BinOp(node.children[1].additional_info,
                             self.visit_expr(node.children[0]),
                             self.visit_expr(node.children[2]))
-        raise NotImplementedError
+        else:
+            raise NotImplementedError
 
     def visit_csexpr(self, node):
         ''' Returns a list of nodes (comma-separated "expr")
@@ -279,6 +292,16 @@ class Transformer(object):
         if len(node.children) == 3:
             expr_list.extend(self.visit_csexpr(node.children[2]))
         return expr_list
+
+    def visit_csvar(self, node):
+        ''' Returns a list of variable names (comma-separated VARIABLE)
+        '''
+        assert len(node.children) in (1, 3)
+        assert node.children[0].symbol == 'VARIABLE'
+        name_list = [node.children[0].additional_info]
+        if len(node.children) == 3:
+            name_list.extend(self.visit_csvar(node.children[2]))
+        return name_list
 
     def visit_atom(self, node):
         chnode = node.children[0]

@@ -133,13 +133,16 @@ def test_parse_arithmetic():
 
 def test_parse_fn_def():
     result = parser.parse('function foo() { };')
-    assert result == Block([FnDef('foo', ['x'], Block([]))])
+    assert result == Block([Stmt(FnDef('foo', [], Block([])))])
 
     result = parser.parse('function foo(x) { x + y; };')
-    assert result == Block([FnDef('foo', ['x'], 
-        Block([Stmt(BinOp('+', Variable('x'), Variable('y')))]))])
+    assert result == Block([Stmt(FnDef('foo', ['x'], 
+        Block([Stmt(BinOp('+', Variable('x'), Variable('y')))])))])
+
+    result = parser.parse('function foo(x){};')
+    assert result == Block([Stmt(FnDef('foo', ['x'], Block([])))])
 
     result = parser.parse('function foo(x, y, z) { x + y; };')
-    assert result == Block([FnDef('foo', ['x', 'y', 'z'], 
-        Block([Stmt(BinOp('+', Variable('x'), Variable('y')))]))])
+    assert result == Block([Stmt(FnDef('foo', ['x', 'y', 'z'], 
+        Block([Stmt(BinOp('+', Variable('x'), Variable('y')))])))])
 
