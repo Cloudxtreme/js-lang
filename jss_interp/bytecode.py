@@ -55,7 +55,8 @@ class CompilerContext(object):
         '''
         c = CompilerContext()
         astnode.compile(c)
-        c.emit(RETURN, 0)
+        if len(c.data) < 2 or c.data[-2] != RETURN:
+            c.emit(RETURN, 0)
         return c.create_bytecode()
 
 

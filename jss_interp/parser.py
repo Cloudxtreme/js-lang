@@ -239,6 +239,7 @@ class Return(AstNode):
     def compile(self, ctx):
         if self.expr:
             self.expr.compile(ctx)
+        ctx.emit(bytecode.RETURN, 0)
 
 
 class Transformer(object):
