@@ -6,8 +6,8 @@ old_globals = dict(globals())
 LOAD_CONSTANT, LOAD_VAR, ASSIGN, \
 DISCARD_TOP, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE, \
 BINARY_ADD, BINARY_SUB, BINARY_MUL, BINARY_DIV, BINARY_EQ, BINARY_LT, \
-CALL \
-= range(14)
+CALL, MAKE_FN \
+= range(15)
 
 bytecodes = dict((globals()[f], f) for f in globals() 
         if f not in old_globals and f != 'old_globals')
@@ -49,6 +49,18 @@ class CompilerContext(object):
     def create_bytecode(self):
         return ByteCode(to_code(self.data), self.constants[:], self.names[:])
 
+    @classmethod
+    def compile_ast(cls, astnode):
+        ''' Create bytecode object from an ast node
+        '''
+        c = CompilerContext()
+        astnode.compile(c)
+        c.emit(RETURN, 0)
+        return c.create_bytecode()
+
+
+compile_ast = CompilerContext.compile_ast
+
 
 class ByteCode(object):
     def __init__(self, code, constants, names):
@@ -70,12 +82,4 @@ def dis(code):
 def to_code(bytecode_list):
     return ''.join([chr(c) for c in bytecode_list])
 
-
-def compile_ast(astnode):
-    ''' Create bytecode object from an ast node
-    '''
-    c = CompilerContext()
-    astnode.compile(c)
-    c.emit(RETURN, 0)
-    return c.create_bytecode()
 

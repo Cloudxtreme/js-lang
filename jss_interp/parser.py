@@ -207,6 +207,12 @@ class FnDef(AstNode):
         self.arg_list = arg_list
         self.body = body
 
+    def compile(self, ctx):
+        ctx.emit(bytecode.LOAD_CONSTANT, 
+                ctx.register_constant(ctx.compile_ast(self.body)))
+        ctx.emit(bytecode.MAKE_FN, 0)
+        ctx.emit(bytecode.ASSIGN, ctx.register_var(self.name))
+
 
 class Transformer(object):
     ''' Transforms AST from the obscure format given to us by the ebnfparser

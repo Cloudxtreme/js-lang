@@ -1,11 +1,11 @@
 # -*- encoding: utf-8 -*-
 
 from jss_interp.parser import ConstantNum, Variable, Assignment, Stmt, Block, \
-        BinOp, Call, If, While
+        BinOp, Call, If, While, FnDef
 from jss_interp.bytecode import compile_ast, dis, to_code, \
         LOAD_CONSTANT, RETURN, LOAD_VAR, ASSIGN, DISCARD_TOP, \
         BINARY_ADD, BINARY_EQ, BINARY_LT, BINARY_MUL, BINARY_SUB, BINARY_DIV, \
-        JUMP_IF_FALSE, JUMP_ABSOLUTE, CALL
+        JUMP_IF_FALSE, JUMP_ABSOLUTE, CALL, MAKE_FN
 
 
 def test_dis():
@@ -159,3 +159,21 @@ def test_while():
     assert bytecode.code == expected_code
     assert bytecode.names == ['x']
     assert bytecode.constants == [1.0, 1.0]
+    
+
+def test_fn_def():
+    bytecode = compile_ast(FnDef('foo', [], Block([])))
+    expected_code = to_code([
+        LOAD_CONSTANT, 0,
+        MAKE_FN, 0,
+        ASSIGN, 0,
+        RETURN, 0])
+    expected_inner_bytecode = to_code([RETURN, 0])
+
+    assert bytecode.code == expected_code
+    assert bytecode.names == ['foo']
+    assert len(bytecode.constants) == 1
+    inner = bytecode.constants[0]
+    assert inner.code == expected_inner_bytecode
+    assert inner.names == []
+    assert inner.constants == []
