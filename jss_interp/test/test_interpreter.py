@@ -249,3 +249,19 @@ def test_return():
     ''')
     assert frame.names == ['two', 'z']
     assert frame.vars[1] == W_FloatObject(44)
+
+
+def test_recursion():
+    frame = interpret_source('''
+    function fib(x) {
+        if (x < 3) {
+            return 1;
+        } else {
+            return fib(x - 1) * fib(x - 2);
+        }
+    };
+    x = fib(10);
+    ''')
+    assert frame.names == ['fib', 'x']
+    assert frame.vars[1] == W_FloatObject(50.0)
+

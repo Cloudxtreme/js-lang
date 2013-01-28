@@ -26,6 +26,7 @@ statement:
       expr ";" 
     | VARIABLE "=" expr ";" 
     | "while" "(" expr ")" "{" statement* "}" 
+    | "if" "(" expr ")" "{" statement* "}" "else" "{" statement* "}"
     | "if" "(" expr ")" "{" statement* "}"
     | "return" expr ";"
     | "return" ";";
@@ -179,11 +180,12 @@ class Call(AstNode):
 class If(AstNode):
     ''' If expression without the else part
     '''
-    _fields = ('cond', 'body')
+    _fields = ('cond', 'body', 'else_block')
 
-    def __init__(self, cond, body):
+    def __init__(self, cond, body, else_block=None):
         self.cond = cond
         self.body = body
+        self.else_block = else_block
 
     def compile(self, ctx):
         self.cond.compile(ctx)
@@ -275,7 +277,13 @@ class Transformer(object):
         elif head_info == 'if':
             cond = self.visit_expr(node.children[2])
             stmts = self._grab_stmts(node.children[5])
-            return If(cond, Block(stmts))
+            if isinstance(node.children[6], Symbol):
+                assert node.children[6].additional_info == '}'
+                else_block = None
+            else:
+                else_block = Block(self._grab_stmts(
+                    node.children[6].children[3]))
+            return If(cond, Block(stmts), else_block)
         elif head_info == 'return':
             if len(node.children) == 2:
                 return Return()
@@ -285,8 +293,7 @@ class Transformer(object):
                 raise NotImplementedError
         elif len(node.children) == 4:
             return Assignment(head_info, self.visit_expr(node.children[2]))
-        else:
-            raise NotImplementedError
+        raise NotImplementedError
 
     def visit_expr(self, node):
         if len(node.children) == 1:

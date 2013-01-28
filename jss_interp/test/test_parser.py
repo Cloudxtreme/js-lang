@@ -53,6 +53,11 @@ def test_parse_if():
     assert result == Block([If(Variable('y'), 
         Block([Assignment('x', ConstantNum(10.0))]))])
 
+    result = parser.parse('if (y) { x = 10; } else { x = 12; }')
+    assert result == Block([If(Variable('y'), 
+        Block([Assignment('x', ConstantNum(10.0))]),
+        Block([Assignment('x', ConstantNum(12.0))]))])
+
 
 def test_parse_fn_call():
     result = parser.parse('foo();')
