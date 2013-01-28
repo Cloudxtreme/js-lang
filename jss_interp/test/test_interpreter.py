@@ -226,6 +226,6 @@ def test_fn_args(capfd):
     ''')
     out, _ = capfd.readouterr()
     assert out == '30.0\n'
-    assert frame.names == ['foo']
-    assert len(frame.vars) == 1
+    assert frame.names == ['foo', 'x']
+    assert len(frame.vars) == 2
     assert frame.valuestack == []

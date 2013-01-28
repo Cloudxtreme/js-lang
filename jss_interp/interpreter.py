@@ -112,8 +112,9 @@ def execute(frame, bc):
 
 
 def call_fn(fn, arg_list):
-    # TODO - pass arg_list - set names and vars
     frame = Frame(fn.bytecode)
+    for i, value in enumerate(arg_list):
+        frame.vars[i] = value
     return execute(frame, fn.bytecode)
 
 
