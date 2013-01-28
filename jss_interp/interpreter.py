@@ -8,16 +8,48 @@ from jss_interp.builtins import BUILTINS
 
 
 class Frame(object):
-    def __init__(self, bc):
+    def __init__(self, bc, parent=None):
         self.valuestack = []
         self.names = bc.names
         self.vars = [None] * len(self.names)
+        self.parent = parent
 
     def push(self, v):
         self.valuestack.append(v)
     
     def pop(self):
         return self.valuestack.pop()
+
+    def lookup(self, arg):
+        value = self._lookup(arg)
+        if value is None:
+            name = self.names[arg]
+            value = BUILTINS.get(name, None)
+            if value is None:
+                raise OperationalError('Variable "%s" is not defined' % name)
+        return value
+    
+    def _lookup(self, arg):
+        value = self.vars[arg]
+        if value is not None:
+            return value
+        if self.parent is not None:
+            name = self.names[arg]
+            return self.parent.lookup_by_name(name)
+
+    def lookup_by_name(self, name):
+        # linear search
+        try:
+            return self.vars[self.names.index(name)]
+        except ValueError:
+            if self.parent:
+                return self.parent.lookup_by_name(name)
+
+    def call(self, fn, arg_list):
+        frame = Frame(fn.bytecode, parent=self)
+        for i, value in enumerate(arg_list):
+            frame.vars[i] = value
+        return execute(frame, fn.bytecode)
 
 
 def execute(frame, bc):
@@ -36,15 +68,7 @@ def execute(frame, bc):
             frame.push(W_Function(bc.constants_fn[arg]))
 
         elif c == bytecode.LOAD_VAR:
-            # TODO - maybe move this logic to some other place?
-            value = frame.vars[arg]
-            if value is None:
-                name = frame.names[arg]
-                value = BUILTINS.get(name, None)
-                if value is None:
-                    raise OperationalError(
-                            'Variable "%s" is not defined' % name)
-            frame.push(value)
+            frame.push(frame.lookup(arg))
 
         elif c == bytecode.ASSIGN:
             frame.vars[arg] = frame.pop()
@@ -100,7 +124,7 @@ def execute(frame, bc):
             if isinstance(fn, W_BuilinFunction):
                 frame.push(fn.call(arg_list))
             else:
-                frame.push(call_fn(fn, arg_list))
+                frame.push(frame.call(fn, arg_list))
 
         elif c == bytecode.RETURN:
             if arg:
@@ -110,13 +134,6 @@ def execute(frame, bc):
 
         else:
             assert False
-
-
-def call_fn(fn, arg_list):
-    frame = Frame(fn.bytecode)
-    for i, value in enumerate(arg_list):
-        frame.vars[i] = value
-    return execute(frame, fn.bytecode)
 
 
 def interpret(bc):
