@@ -289,11 +289,19 @@ def test_recursion():
         if (x < 3) {
             return 1;
         } else {
-            return fib(x - 1) * fib(x - 2);
+            return fib(x - 1) + fib(x - 2);
         }
     };
-    x = fib(10);
+    f1 = fib(1);
+    f2 = fib(2);
+    f3 = fib(3);
+    f4 = fib(4);
+    f10 = fib(10);
     ''')
-    assert frame.names == ['fib', 'x']
-    assert frame.vars[1] == W_FloatObject(50.0)
+    assert frame.names == ['fib', 'f1', 'f2', 'f3', 'f4', 'f10']
+    assert frame.vars[1] == W_FloatObject(1.0)
+    assert frame.vars[2] == W_FloatObject(1.0)
+    assert frame.vars[3] == W_FloatObject(2.0)
+    assert frame.vars[4] == W_FloatObject(3.0)
+    assert frame.vars[5] == W_FloatObject(55.0)
 
