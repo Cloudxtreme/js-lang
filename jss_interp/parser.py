@@ -192,7 +192,13 @@ class If(AstNode):
         ctx.emit(bytecode.JUMP_IF_FALSE, 0) # to be patched later
         jump_pos = len(ctx.data) - 1
         self.body.compile(ctx)
+        if self.else_block:
+            ctx.emit(bytecode.JUMP_ABSOLUTE, 0) # to be patched later
+            jump_abs_pos = len(ctx.data) - 1
         ctx.data[jump_pos] = len(ctx.data)
+        if self.else_block:
+            self.else_block.compile(ctx)
+            ctx.data[jump_abs_pos] = len(ctx.data)
 
 
 class While(AstNode):

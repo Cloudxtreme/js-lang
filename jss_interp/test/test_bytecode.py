@@ -147,6 +147,20 @@ def test_if():
     assert bytecode.names == []
     assert bytecode.constants_float == [1.0, 2.0]
 
+    bytecode = compile_ast(
+            If(ConstantNum(1.0), ConstantNum(2.0), ConstantNum(3.0)))
+    expected_code = to_code([
+            LOAD_CONSTANT_FLOAT, 0,
+            JUMP_IF_FALSE, 8,
+            LOAD_CONSTANT_FLOAT, 1,
+            JUMP_ABSOLUTE, 10,
+            LOAD_CONSTANT_FLOAT, 2,
+            RETURN, 0])
+    print dis(bytecode.code)
+    assert bytecode.code == expected_code
+    assert bytecode.names == []
+    assert bytecode.constants_float == [1.0, 2.0, 3.0]
+
 
 def test_while():
     bytecode = compile_ast(Block([
