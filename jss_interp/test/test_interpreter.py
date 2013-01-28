@@ -251,6 +251,18 @@ def test_return():
     assert frame.vars[1] == W_FloatObject(44)
 
 
+def test_scope():
+    frame = interpret_source('''
+    x = 10;
+    function s() {
+        return x;
+    };
+    y = s();
+    ''')
+    assert frame.names == ['x', 's', 'y']
+    assert frame.vars[2] == W_FloatObject(10.0)
+
+
 def test_recursion():
     frame = interpret_source('''
     function fib(x) {

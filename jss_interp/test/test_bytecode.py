@@ -136,6 +136,7 @@ def test_call():
     assert bytecode.names == ['fn', 'z']
     assert bytecode.constants_float == [1.0]
 
+
 def test_if():
     bytecode = compile_ast(If(ConstantNum(1.0), ConstantNum(2.0)))
     expected_code = to_code([
