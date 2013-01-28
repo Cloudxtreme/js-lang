@@ -192,6 +192,7 @@ class If(AstNode):
         ctx.emit(bytecode.JUMP_IF_FALSE, 0) # to be patched later
         jump_pos = len(ctx.data) - 1
         self.body.compile(ctx)
+        jump_abs_pos = 0
         if self.else_block:
             ctx.emit(bytecode.JUMP_ABSOLUTE, 0) # to be patched later
             jump_abs_pos = len(ctx.data) - 1

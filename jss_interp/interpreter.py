@@ -144,7 +144,7 @@ def interpret(bc):
 
 def interpret_source(source):
     ast = parser.parse(source)
-    bc = bytecode.compile_ast(ast)
+    bc = bytecode.CompilerContext.compile_ast(ast)
     return interpret(bc)
 
 

@@ -2,10 +2,13 @@
 
 from jss_interp.parser import ConstantNum, Variable, Assignment, Stmt, Block, \
         BinOp, Call, If, While, FnDef, Return
-from jss_interp.bytecode import compile_ast, dis, to_code, \
+from jss_interp.bytecode import CompilerContext, dis, to_code, \
         LOAD_CONSTANT_FLOAT, LOAD_CONSTANT_FN, RETURN, LOAD_VAR, ASSIGN, \
         DISCARD_TOP, BINARY_ADD, BINARY_EQ, BINARY_LT, BINARY_MUL, \
         BINARY_SUB, BINARY_DIV, JUMP_IF_FALSE, JUMP_ABSOLUTE, CALL
+
+
+compile_ast = CompilerContext.compile_ast
 
 
 def test_dis():

@@ -28,12 +28,11 @@ class CompilerContext(object):
         self.data = []
         self.constants_float = []
         self.constants_fn = []
+        self.names = []
+        self.names_to_numbers = {}
         if names is not None:
-            self.names = list(names)
-            self.names_to_numbers = dict((n, i) for i, n in enumerate(names))
-        else:
-            self.names = []
-            self.names_to_numbers = {}
+            for name in names:
+                self.register_var(name)
 
     def register_constant_float(self, v):
         self.constants_float.append(v)
@@ -61,8 +60,8 @@ class CompilerContext(object):
                 self.names[:], 
                 self.constants_float[:], self.constants_fn[:])
 
-    @classmethod
-    def compile_ast(cls, astnode, names=None):
+    @staticmethod
+    def compile_ast(astnode, names=None):
         ''' Create bytecode object from an ast node
         :names: initial names for CompilerContext
         '''
@@ -72,8 +71,6 @@ class CompilerContext(object):
             c.emit(RETURN, 0)
         return c.create_bytecode()
 
-
-compile_ast = CompilerContext.compile_ast
 
 
 class ByteCode(object):
