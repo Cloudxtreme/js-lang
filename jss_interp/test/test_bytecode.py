@@ -205,6 +205,30 @@ def test_fn_def():
     assert inner.names == ['x']
     assert inner.constants_float == []
 
+    bytecode = compile_ast(FnDef('foo', ['y', 'x'], Block([
+        Stmt(BinOp('*', Variable('x'), Variable('x'))),
+        ])))
+    expected_code = to_code([
+        LOAD_CONSTANT_FN, 0,
+        ASSIGN, 0,
+        LOAD_CONSTANT_FN, 0,
+        RETURN, 0])
+    expected_inner_bytecode = to_code([
+        LOAD_VAR, 1,
+        LOAD_VAR, 1,
+        BINARY_MUL, 0,
+        DISCARD_TOP, 0,
+        RETURN, 0
+        ])
+
+    assert bytecode.code == expected_code
+    assert bytecode.names == ['foo']
+    assert len(bytecode.constants_fn) == 1
+    inner = bytecode.constants_fn[0]
+    assert inner.names == ['y', 'x']
+    assert inner.code == expected_inner_bytecode
+    assert inner.constants_float == []
+
 
 def test_return():
     bytecode = compile_ast(FnDef('foo', ['x'], Block([

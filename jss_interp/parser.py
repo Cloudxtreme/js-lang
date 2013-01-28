@@ -223,7 +223,8 @@ class FnDef(AstNode):
         self.body = body
 
     def compile(self, ctx):
-        arg = ctx.register_constant_fn(ctx.compile_ast(self.body))
+        arg = ctx.register_constant_fn(ctx.compile_ast(
+            self.body, names=self.arg_list))
         ctx.emit(bytecode.LOAD_CONSTANT_FN, arg)
         ctx.emit(bytecode.ASSIGN, ctx.register_var(self.name))
         ctx.emit(bytecode.LOAD_CONSTANT_FN, arg) # case it is an expression

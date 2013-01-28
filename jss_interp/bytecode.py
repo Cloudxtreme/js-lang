@@ -24,12 +24,16 @@ BINOP = {
 
 
 class CompilerContext(object):
-    def __init__(self):
+    def __init__(self, names=None):
         self.data = []
         self.constants_float = []
         self.constants_fn = []
-        self.names = []
-        self.names_to_numbers = {}
+        if names is not None:
+            self.names = list(names)
+            self.names_to_numbers = dict((n, i) for i, n in enumerate(names))
+        else:
+            self.names = []
+            self.names_to_numbers = {}
 
     def register_constant_float(self, v):
         self.constants_float.append(v)
@@ -58,10 +62,11 @@ class CompilerContext(object):
                 self.constants_float[:], self.constants_fn[:])
 
     @classmethod
-    def compile_ast(cls, astnode):
+    def compile_ast(cls, astnode, names=None):
         ''' Create bytecode object from an ast node
+        :names: initial names for CompilerContext
         '''
-        c = CompilerContext()
+        c = CompilerContext(names=names)
         astnode.compile(c)
         if len(c.data) < 2 or c.data[-2] != RETURN:
             c.emit(RETURN, 0)
