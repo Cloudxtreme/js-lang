@@ -229,3 +229,23 @@ def test_fn_args(capfd):
     assert frame.names == ['foo', 'x']
     assert len(frame.vars) == 2
     assert frame.valuestack == []
+
+
+def test_return():
+    frame = interpret_source('''
+    function const() {
+        return 3.14;
+    }
+    z = const();
+    ''')
+    assert frame.names == ['const', 'z']
+    assert frame.vars[1] == W_FloatObject(3.14)
+
+    frame = interpret_source('''
+    function two(x) {
+        return x * 2;
+    }
+    z = two(two(11));
+    ''')
+    assert frame.names == ['const', 'z']
+    assert frame.vars[1] == W_FloatObject(44)
