@@ -235,7 +235,7 @@ def test_return():
     frame = interpret_source('''
     function const() {
         return 3.14;
-    }
+    };
     z = const();
     ''')
     assert frame.names == ['const', 'z']
@@ -244,8 +244,8 @@ def test_return():
     frame = interpret_source('''
     function two(x) {
         return x * 2;
-    }
+    };
     z = two(two(11));
     ''')
-    assert frame.names == ['const', 'z']
+    assert frame.names == ['two', 'z']
     assert frame.vars[1] == W_FloatObject(44)

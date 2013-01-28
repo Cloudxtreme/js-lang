@@ -21,6 +21,7 @@ class Frame(object):
 
 
 def execute(frame, bc):
+    #print '\n', bytecode.dis(bc.code), '\n'
     code = bc.code
     pc = 0
     while True:
@@ -119,7 +120,6 @@ def call_fn(fn, arg_list):
 
 
 def interpret(bc):
-    #print bytecode.dis(bc.code)
     frame = Frame(bc)
     execute(frame, bc)
     return frame

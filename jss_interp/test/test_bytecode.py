@@ -240,8 +240,17 @@ def test_return():
         RETURN, 0])
     expected_inner_bytecode = to_code([
         LOAD_VAR, 0,
-        RETURN, 0
+        RETURN, 1
         ])
+
+    bytecode = compile_ast(FnDef('foo', ['x'], Block([
+        Return()])))
+    expected_code = to_code([
+        LOAD_CONSTANT_FN, 0,
+        ASSIGN, 0,
+        LOAD_CONSTANT_FN, 0,
+        RETURN, 0])
+    expected_inner_bytecode = to_code([RETURN, 0])
 
     assert bytecode.code == expected_code
     assert bytecode.names == ['foo']
@@ -262,7 +271,7 @@ def test_return():
         RETURN, 0])
     expected_inner_bytecode = to_code([
         LOAD_VAR, 0,
-        RETURN, 0,
+        RETURN, 1,
         LOAD_VAR, 0,
         DISCARD_TOP, 0,
         RETURN, 0,
