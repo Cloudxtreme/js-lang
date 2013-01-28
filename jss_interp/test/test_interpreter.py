@@ -202,3 +202,30 @@ def test_fn_print(capfd):
     assert frame.names == ['foo']
     assert len(frame.vars) == 1
     assert frame.valuestack == []
+
+
+def test_fn_args(capfd):
+    frame = interpret_source('''
+    function foo(x) {
+        print(x);
+    };
+    foo(10);
+    ''')
+    out, _ = capfd.readouterr()
+    assert out == '10.0\n'
+    assert frame.names == ['foo']
+    assert len(frame.vars) == 1
+    assert frame.valuestack == []
+
+    frame = interpret_source('''
+    function foo(x, y) {
+        print(x + y);
+    };
+    x = 20;
+    foo(10, x);
+    ''')
+    out, _ = capfd.readouterr()
+    assert out == '30.0\n'
+    assert frame.names == ['foo']
+    assert len(frame.vars) == 1
+    assert frame.valuestack == []
