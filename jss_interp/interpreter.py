@@ -1,10 +1,17 @@
 # -*- encoding: utf-8 -*-
 
+from pypy.rlib.jit import JitDriver
+
 from jss_interp import parser
 from jss_interp import bytecode
 from jss_interp.base_objects import OperationalError, \
         W_FloatObject, W_Function, W_BuilinFunction
 from jss_interp.builtins import BUILTINS
+
+
+jitdriver = JitDriver(
+        greens=['pc', 'code', 'bc'],
+        reds=['frame']) 
 
 
 class Frame(object):
@@ -57,6 +64,10 @@ def execute(frame, bc):
     code = bc.code
     pc = 0
     while True:
+
+        jitdriver.jit_merge_point(
+                pc=pc, code=code, bc=bc, frame=frame)
+
         c = ord(code[pc])
         arg = ord(code[pc + 1])
         pc += 2
