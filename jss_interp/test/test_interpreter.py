@@ -262,6 +262,26 @@ def test_scope():
     assert frame.names == ['x', 's', 'y']
     assert frame.vars[2] == W_FloatObject(10.0)
 
+    frame = interpret_source('''
+    g = 30;
+    function s() {
+        g = 10;
+        function inner() {
+            return g;
+        };
+        return inner;
+    };
+    function scoped() {
+        g = 20;
+        inner = s();
+        return inner();
+    };
+
+    y = scoped();
+    ''')
+    assert frame.names == ['g', 's', 'scoped', 'y']
+    assert frame.vars[3] == W_FloatObject(10.0)
+
 
 def test_recursion():
     frame = interpret_source('''

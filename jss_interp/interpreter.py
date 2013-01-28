@@ -46,7 +46,7 @@ class Frame(object):
                 return self.parent.lookup_by_name(name)
 
     def call(self, fn, arg_list):
-        frame = Frame(fn.bytecode, parent=self)
+        frame = Frame(fn.bytecode, parent=fn.parent_frame)
         for i, value in enumerate(arg_list):
             frame.vars[i] = value
         return execute(frame, fn.bytecode)
@@ -65,7 +65,7 @@ def execute(frame, bc):
             frame.push(W_FloatObject(bc.constants_float[arg]))
 
         elif c == bytecode.LOAD_CONSTANT_FN:
-            frame.push(W_Function(bc.constants_fn[arg]))
+            frame.push(W_Function(bc.constants_fn[arg], frame))
 
         elif c == bytecode.LOAD_VAR:
             frame.push(frame.lookup(arg))
