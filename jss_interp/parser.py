@@ -162,7 +162,7 @@ class Assignment(AstNode):
 
 
 class Call(AstNode):
-    ''' Call function (with one argument now)
+    ''' Function call with a list of arguments 
     '''
     _fields = ('fn', 'args',)
 
@@ -178,7 +178,7 @@ class Call(AstNode):
 
 
 class If(AstNode):
-    ''' If expression without the else part
+    ''' If expression with optional else part
     '''
     _fields = ('cond', 'body', 'else_block')
 
@@ -189,17 +189,17 @@ class If(AstNode):
 
     def compile(self, ctx):
         self.cond.compile(ctx)
-        ctx.emit(bytecode.JUMP_IF_FALSE, 0) # to be patched later
+        ctx.emit(bytecode.JUMP_IF_FALSE, 0) # to be patched later (1)
         jump_pos = len(ctx.data) - 1
         self.body.compile(ctx)
         jump_abs_pos = 0
         if self.else_block:
-            ctx.emit(bytecode.JUMP_ABSOLUTE, 0) # to be patched later
+            ctx.emit(bytecode.JUMP_ABSOLUTE, 0) # to be patched later (2)
             jump_abs_pos = len(ctx.data) - 1
-        ctx.data[jump_pos] = len(ctx.data)
+        ctx.data[jump_pos] = len(ctx.data) # patch (1)
         if self.else_block:
             self.else_block.compile(ctx)
-            ctx.data[jump_abs_pos] = len(ctx.data)
+            ctx.data[jump_abs_pos] = len(ctx.data) # patch (2)
 
 
 class While(AstNode):
@@ -218,7 +218,7 @@ class While(AstNode):
         jump_pos = len(ctx.data) - 1
         self.body.compile(ctx)
         ctx.emit(bytecode.JUMP_ABSOLUTE, cond_pos)
-        ctx.data[jump_pos] = len(ctx.data)
+        ctx.data[jump_pos] = len(ctx.data) # patch
 
 
 class FnDef(AstNode):
