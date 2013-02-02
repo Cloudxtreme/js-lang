@@ -9,12 +9,9 @@ from jss_interp.base_objects import OperationalError, \
 from jss_interp.builtins import BUILTINS
 
 
-def get_printable_location(pc, code, _):
-    return "%s || %s || %s" % (
-            bytecode.dis_to_line(code[:pc]), 
-            bytecode.dis_to_line(code[pc:pc+2]), 
-            bytecode.dis_to_line(code[pc+2:])
-            )
+def get_printable_location(pc, code, bc):
+    return '%s #%d %s' % (bc.get_repr(), pc, bytecode.dis_one(code[pc]))
+
 
 jitdriver = JitDriver(
         greens=['pc', 'code', 'bc'],
@@ -161,15 +158,15 @@ def interpret(bc):
     return frame
 
 
-def interpret_source(source):
-    ast = parser.parse(source)
+def interpret_source(source, filename=None):
+    ast = parser.parse(source, filename=filename)
     bc = bytecode.CompilerContext.compile_ast(ast)
     return interpret(bc)
 
 
-def main(source):
+def main(source, filename=None):
     try:
-        interpret_source(source)
+        interpret_source(source, filename=filename)
     except parser.LexerError as e:
         print 'LexerError', e
         return 1

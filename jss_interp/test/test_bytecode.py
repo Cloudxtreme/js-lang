@@ -183,7 +183,8 @@ def test_while():
     
 
 def test_fn_def():
-    bytecode = compile_ast(FnDef('foo', [], Block([])))
+    bytecode = compile_ast(FnDef('foo', [], Block([]), 'bar.js', 2),
+            co_name='foo', co_filename='bar.js', co_firstlineno=2)
     expected_code = to_code([
         LOAD_CONSTANT_FN, 0,
         ASSIGN, 0,
@@ -193,6 +194,9 @@ def test_fn_def():
 
     assert bytecode.code == expected_code
     assert bytecode.names == ['foo']
+    assert bytecode.co_name == 'foo'
+    assert bytecode.co_filename == 'bar.js'
+    assert bytecode.co_firstlineno == 2
     assert len(bytecode.constants_fn) == 1
     inner = bytecode.constants_fn[0]
     assert inner.code == expected_inner_bytecode
@@ -201,7 +205,7 @@ def test_fn_def():
 
     bytecode = compile_ast(FnDef('foo', ['x'], Block([
         Stmt(BinOp('*', Variable('x'), Variable('x'))),
-        ])))
+        ]), None, 0))
     expected_code = to_code([
         LOAD_CONSTANT_FN, 0,
         ASSIGN, 0,
@@ -225,7 +229,7 @@ def test_fn_def():
 
     bytecode = compile_ast(FnDef('foo', ['y', 'x'], Block([
         Stmt(BinOp('*', Variable('x'), Variable('x'))),
-        ])))
+        ]), None, 0))
     expected_code = to_code([
         LOAD_CONSTANT_FN, 0,
         ASSIGN, 0,
@@ -250,7 +254,7 @@ def test_fn_def():
 
 def test_return():
     bytecode = compile_ast(FnDef('foo', ['x'], Block([
-        Return(Variable('x'))])))
+        Return(Variable('x'))]), None, 0))
     expected_code = to_code([
         LOAD_CONSTANT_FN, 0,
         ASSIGN, 0,
@@ -262,7 +266,7 @@ def test_return():
         ])
 
     bytecode = compile_ast(FnDef('foo', ['x'], Block([
-        Return()])))
+        Return()]), None, 0))
     expected_code = to_code([
         LOAD_CONSTANT_FN, 0,
         ASSIGN, 0,
@@ -281,7 +285,7 @@ def test_return():
     bytecode = compile_ast(FnDef('foo', ['x'], Block([
         Return(Variable('x')),
         Stmt(Variable('x')),
-        ])))
+        ]), None, 0))
     expected_code = to_code([
         LOAD_CONSTANT_FN, 0,
         ASSIGN, 0,

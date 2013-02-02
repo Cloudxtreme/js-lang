@@ -8,5 +8,5 @@ function sum_numbers(N) {
     return sum;
 };
 
-print(sum_numbers(3000000));
+print(sum_numbers(7000000));
 

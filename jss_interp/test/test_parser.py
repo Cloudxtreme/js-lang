@@ -138,31 +138,35 @@ def test_parse_arithmetic():
 
 def test_parse_fn_def():
     result = parser.parse('function foo() { };')
-    assert result == Block([Stmt(FnDef('foo', [], Block([])))])
+    assert result == Block([Stmt(FnDef('foo', [], Block([]), None, 0))])
 
-    result = parser.parse('function foo(x) { x + y; };')
+    result = parser.parse('''
+
+    function foo(x) { x + y; };
+    ''', filename='foo.js')
     assert result == Block([Stmt(FnDef('foo', ['x'], 
-        Block([Stmt(BinOp('+', Variable('x'), Variable('y')))])))])
+        Block([Stmt(BinOp('+', Variable('x'), Variable('y')))]),
+        'foo.js', 2))])
 
     result = parser.parse('function foo(x){};')
-    assert result == Block([Stmt(FnDef('foo', ['x'], Block([])))])
+    assert result == Block([Stmt(FnDef('foo', ['x'], Block([]), None, 0))])
 
     result = parser.parse('function foo(){x;};')
     assert result == Block([Stmt(FnDef('foo', [], Block([
-        Stmt(Variable('x'))])))])
+        Stmt(Variable('x'))]), None, 0))])
 
     result = parser.parse('function foo(x, y, z) { x + y; };')
     assert result == Block([Stmt(FnDef('foo', ['x', 'y', 'z'], 
-        Block([Stmt(BinOp('+', Variable('x'), Variable('y')))])))])
+        Block([Stmt(BinOp('+', Variable('x'), Variable('y')))]), None, 0))])
 
 
-def test_parser_return():
+def test_parse_return():
     result = parser.parse('function foo(x, y, z) { return; };')
     assert result == Block([Stmt(FnDef('foo', ['x', 'y', 'z'], 
-        Block([Return()])))])
+        Block([Return()]), None, 0))])
 
     result = parser.parse('function foo(x, y, z) { return x + y; };')
     assert result == Block([Stmt(FnDef('foo', ['x', 'y', 'z'], 
-        Block([Return(BinOp('+', Variable('x'), Variable('y')))])))])
+        Block([Return(BinOp('+', Variable('x'), Variable('y')))]), None, 0))])
 
 

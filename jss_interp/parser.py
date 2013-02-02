@@ -224,16 +224,22 @@ class While(AstNode):
 class FnDef(AstNode):
     ''' Function definition
     '''
-    _fields = ('name', 'arg_list', 'body')
+    _fields = ('name', 'arg_list', 'body', 'co_filename', 'co_firstlineno')
 
-    def __init__(self, name, arg_list, body):
+    def __init__(self, name, arg_list, body, 
+            co_filename, co_firstlineno):
         self.name = name
         self.arg_list = arg_list
         self.body = body
+        self.co_filename = co_filename
+        self.co_firstlineno = co_firstlineno
 
     def compile(self, ctx):
         arg = ctx.register_constant_fn(ctx.compile_ast(
-            self.body, names=self.arg_list))
+            self.body, names=self.arg_list,
+            co_name=self.name,
+            co_filename=self.co_filename,
+            co_firstlineno=self.co_firstlineno))
         ctx.emit(bytecode.LOAD_CONSTANT_FN, arg)
         ctx.emit(bytecode.ASSIGN, ctx.register_var(self.name))
         ctx.emit(bytecode.LOAD_CONSTANT_FN, arg) # case it is an expression
@@ -317,20 +323,23 @@ class Transformer(object):
                 args = []
             return Call(fn, args)
         elif node.symbol == 'fndef':
+            co_firstlineno = node.getsourcepos().lineno
             fn_name = node.children[1].additional_info
             if len(node.children) == 6: # foo() {};
-                return FnDef(fn_name, [], Block([]))
+                return FnDef(fn_name, [], Block([]), 
+                    self.filename, co_firstlineno)
             elif len(node.children) == 7: # foo(x) {}; or foo() {x;}
                 if node.children[3].symbol == 'csvar':
                     return FnDef(fn_name, self.visit_csvar(node.children[3]),
-                            Block([]))
+                            Block([]), self.filename, co_firstlineno)
                 else:
                     stmts = self._grab_stmts(node.children[5])
-                    return FnDef(fn_name, [], Block(stmts))
+                    return FnDef(fn_name, [], Block(stmts),
+                        self.filename, co_firstlineno)
             elif len(node.children) == 8: # foo(x) {x;}
                 stmts = self._grab_stmts(node.children[6])
                 return FnDef(fn_name, self.visit_csvar(node.children[3]),
-                        Block(stmts))
+                        Block(stmts), self.filename, co_firstlineno)
             else:
                 raise NotImplementedError
         elif len(node.children) == 3:
@@ -376,12 +385,12 @@ class Transformer(object):
         raise NotImplementedError
 
 
-transformer = Transformer()
 
-
-def parse(source):
+def parse(source, filename=None):
     ''' Parse the source code and produce an AST
     '''
+    transformer = Transformer()
+    transformer.filename = filename
     try:
         return transformer.visit_main(_parse(source))
     except (LexerError, ParseError):

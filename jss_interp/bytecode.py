@@ -54,14 +54,20 @@ class CompilerContext(object):
         self.data.append(bc)
         self.data.append(arg)
 
-    def create_bytecode(self):
+    def create_bytecode(self,
+            co_name=None, co_filename=None, co_firstlineno=0):
         return ByteCode(
                 to_code(self.data), 
                 self.names[:], 
-                self.constants_float[:], self.constants_fn[:])
+                self.constants_float[:], 
+                self.constants_fn[:],
+                co_name=co_name, 
+                co_filename=co_filename, 
+                co_firstlineno=co_firstlineno)
 
     @staticmethod
-    def compile_ast(astnode, names=None):
+    def compile_ast(astnode, names=None,
+            co_name=None, co_filename=None, co_firstlineno=0):
         ''' Create bytecode object from an ast node
         :names: initial names for CompilerContext
         '''
@@ -69,26 +75,34 @@ class CompilerContext(object):
         astnode.compile(c)
         if len(c.data) < 2 or c.data[-2] != RETURN:
             c.emit(RETURN, 0)
-        return c.create_bytecode()
-
+        return c.create_bytecode(
+                co_name=co_name, 
+                co_filename=co_filename, 
+                co_firstlineno=co_firstlineno)
 
 
 class ByteCode(object):
-    def __init__(self, code, names, constants_float, constants_fn):
+    def __init__(self, code, names, constants_float, constants_fn,
+            co_name=None, co_filename=None, co_firstlineno=0):
         self.code = code
         self.names = names
         self.constants_float = constants_float
         self.constants_fn = constants_fn
+        self.co_name = co_name or '__main__'
+        self.co_filename = co_filename or '__file__'
+        self.co_firstlineno = co_firstlineno or 0
 
+    def get_repr(self):
+        return "<code object %s, file '%s', line %d>" % (
+            self.co_name, self.co_filename, self.co_firstlineno + 1)
+        
 
 def dis_to_list(code):
     ''' Disassemble code - for debugging
     '''
     dump = []
     for i in xrange(0, len(code), 2):
-        c = ord(code[i])
-        arg = ord(code[i+1])
-        dump.append('%s %s' % (bytecodes[c], arg))
+        dump.append('%s %s' % (dis_one(code[i]), ord(code[i+1])))
     return dump
 
 
@@ -100,6 +114,10 @@ def dis(code):
 
 def dis_to_line(code):
     return ' | '.join(dis_to_list(code))
+
+
+def dis_one(code):
+    return bytecodes[ord(code)]
 
 
 def to_code(bytecode_list):
