@@ -9,9 +9,17 @@ from jss_interp.base_objects import OperationalError, \
 from jss_interp.builtins import BUILTINS
 
 
+def get_printable_location(pc, code, _):
+    return "%s || %s || %s" % (
+            bytecode.dis_to_line(code[:pc]), 
+            bytecode.dis_to_line(code[pc:pc+2]), 
+            bytecode.dis_to_line(code[pc+2:])
+            )
+
 jitdriver = JitDriver(
         greens=['pc', 'code', 'bc'],
-        reds=['frame']) 
+        reds=['frame'],
+        get_printable_location=get_printable_location)
 
 
 class Frame(object):
@@ -167,6 +175,9 @@ def main(source):
         return 1
     except parser.ParseError as e: 
         print 'ParseError', e
+        return 1
+    except OperationalError as e:
+        print e
         return 1
     else:
         return 0

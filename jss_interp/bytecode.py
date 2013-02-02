@@ -81,14 +81,25 @@ class ByteCode(object):
         self.constants_fn = constants_fn
 
 
-def dis(code):
+def dis_to_list(code):
     ''' Disassemble code - for debugging
     '''
     dump = []
     for i in xrange(0, len(code), 2):
-        c, arg = map(ord, code[i:i+2])
+        c = ord(code[i])
+        arg = ord(code[i+1])
         dump.append('%s %s' % (bytecodes[c], arg))
-    return '\n'.join(dump)
+    return dump
+
+
+def dis(code):
+    ''' Disassemble code - for debugging
+    '''
+    return '\n'.join(dis_to_list(code))
+
+
+def dis_to_line(code):
+    return ' | '.join(dis_to_list(code))
 
 
 def to_code(bytecode_list):
