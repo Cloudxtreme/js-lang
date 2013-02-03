@@ -10,20 +10,19 @@ def test_frame():
     bc = ByteCode('', ['x', 'y'], [], [])
     frame = Frame(bc)
     assert len(frame.vars) == 2
-    assert len(frame.valuestack) == 0
+    assert frame.valuestack_pos == 0
     x, y = object(), object()
     frame.push(x)
-    assert len(frame.valuestack) == 1
+    assert frame.valuestack_pos == 1
     res = frame.pop()
     assert res is x
-    assert len(frame.valuestack) == 0
+    assert frame.valuestack_pos == 0
     frame.push(x)
     frame.push(y)
-    assert len(frame.valuestack) == 2
+    assert frame.valuestack_pos == 2
     res = frame.pop()
     assert res is y
-    assert len(frame.valuestack) == 1
-
+    assert frame.valuestack_pos == 1
 
 def test_load_constant():
     bc = ByteCode(to_code([
@@ -31,13 +30,13 @@ def test_load_constant():
         RETURN, 0]), 
         [], [12.2], [])
     frame = interpret(bc)
-    assert frame.valuestack == [W_FloatObject(12.2)]
+    assert frame.test_valuestack == [W_FloatObject(12.2)]
     assert frame.vars == []
     
 
 def test_assignment():
     frame = interpret_source('x = 2.71;')
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
     assert frame.vars == [W_FloatObject(2.71)]
 
 
@@ -46,14 +45,14 @@ def test_load_variable():
     x = 2.71;
     y = x;
     ''')
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
     assert frame.names == ['x', 'y']
     assert frame.vars == [W_FloatObject(2.71), W_FloatObject(2.71)]
 
 
 def test_dicard_top():
     frame = interpret_source('2.71;')
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
     assert frame.vars == []
 
 
@@ -67,7 +66,7 @@ def test_jumps():
         RETURN, 0]),
         [], [0.0, -1.0, 1.0], [])
     frame = interpret(bc)
-    assert frame.valuestack == [W_FloatObject(1.0)]
+    assert frame.test_valuestack == [W_FloatObject(1.0)]
 
     bc = ByteCode(to_code([
         LOAD_CONSTANT_FLOAT, 0,
@@ -78,7 +77,7 @@ def test_jumps():
         RETURN, 0]),
         [], [1.0, -1.0, 2.0], [])
     frame = interpret(bc)
-    assert frame.valuestack == [W_FloatObject(-1.0)]
+    assert frame.test_valuestack == [W_FloatObject(-1.0)]
 
 
 def test_if():
@@ -88,7 +87,7 @@ def test_if():
     }''')
     assert frame.names == ['x']
     assert frame.vars == [None]
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
 
     frame = interpret_source('''
     if (1) {
@@ -96,7 +95,7 @@ def test_if():
     }''')
     assert frame.names == ['x']
     assert frame.vars == [W_FloatObject(10.0)]
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
 
 
 def test_while():
@@ -106,7 +105,7 @@ def test_while():
     }''')
     assert frame.names == ['x']
     assert frame.vars == [None]
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
 
     frame = interpret_source('''
     x = 1;
@@ -117,7 +116,7 @@ def test_while():
     }''')
     assert frame.names == ['x', 'y']
     assert frame.vars == [W_FloatObject(0.0), W_FloatObject(100.0)]
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
 
 
 def test_binary_add():
@@ -126,7 +125,7 @@ def test_binary_add():
     ''')
     assert frame.names == ['x']
     assert frame.vars == [W_FloatObject(3.5)]
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
 
 
 def test_binary_bool():
@@ -144,7 +143,7 @@ def test_binary_bool():
             assert frame.vars == [
                     W_FloatObject(x), W_FloatObject(y),
                     W_BoolObject(check_fn(x, y))]
-            assert frame.valuestack == []
+            assert frame.test_valuestack == []
 
 
 def test_while_loops():
@@ -156,14 +155,14 @@ def test_while_loops():
     ''')
     assert frame.names == ['x']
     assert frame.vars == [W_FloatObject(10.0)]
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
 
 
 def test_print(capfd):
     frame = interpret_source('print(3.78);')
     out, _ = capfd.readouterr()
     assert out == '3.78\n'
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
 
 
 def test_arithmetic_expressions():
@@ -177,7 +176,7 @@ def test_arithmetic_expressions():
     z = (x + y) / x + 3
     assert frame.names == ['x', 'y', 'z']
     assert frame.vars == [W_FloatObject(x), W_FloatObject(y), W_FloatObject(z)]
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
 
     
 def test_fn_noop():
@@ -187,7 +186,7 @@ def test_fn_noop():
     ''')
     assert frame.names == ['foo']
     assert len(frame.vars) == 1
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
 
 
 def test_fn_print(capfd):
@@ -201,7 +200,7 @@ def test_fn_print(capfd):
     assert out == '1.0\n'
     assert frame.names == ['foo']
     assert len(frame.vars) == 1
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
 
 
 def test_fn_args(capfd):
@@ -215,7 +214,7 @@ def test_fn_args(capfd):
     assert out == '10.0\n'
     assert frame.names == ['foo']
     assert len(frame.vars) == 1
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
 
     frame = interpret_source('''
     function foo(x, y) {
@@ -228,7 +227,7 @@ def test_fn_args(capfd):
     assert out == '30.0\n'
     assert frame.names == ['foo', 'x']
     assert len(frame.vars) == 2
-    assert frame.valuestack == []
+    assert frame.test_valuestack == []
 
 
 def test_return():

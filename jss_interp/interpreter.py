@@ -26,7 +26,7 @@ class Frame(object):
 
     def __init__(self, bc, parent=None):
         self = jit.hint(self, fresh_virtualizable=True, access_directly=True)
-        self.valuestack = [None] * 255 # can not grow larger?
+        self.valuestack = [None] * 255 # TODO - get upper bound staticaly
         self.valuestack_pos = 0
         self.names = bc.names
         self.vars = [None] * len(bc.names)
@@ -76,6 +76,11 @@ class Frame(object):
         for i, value in enumerate(arg_list):
             frame.vars[i] = value
         return execute(frame, fn.bytecode)
+
+    @property
+    def test_valuestack(self):
+        ''' NOT_RPYTHON '''
+        return self.valuestack[:self.valuestack_pos]
 
 
 def execute(frame, bc):
