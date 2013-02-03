@@ -33,14 +33,13 @@ class Frame(object):
         self.parent = parent
 
     def push(self, v):
-        pos = jit.hint(self.valuestack_pos, promote=True)
+        pos = self.valuestack_pos
         assert pos >= 0
         self.valuestack[pos] = v
         self.valuestack_pos = pos + 1
     
     def pop(self):
-        pos = jit.hint(self.valuestack_pos, promote=True)
-        new_pos = pos - 1
+        new_pos = self.valuestack_pos - 1
         assert new_pos >= 0
         v = self.valuestack[new_pos]
         self.valuestack_pos = new_pos
