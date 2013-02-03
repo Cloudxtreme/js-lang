@@ -21,7 +21,6 @@ jitdriver = jit.JitDriver(
 
 
 class Frame(object):
-    #_immutable_fields_ = ['names', 'parent']
     _virtualizable2_ = ['valuestack[*]', 'valuestack_pos', 'vars[*]',
             'names[*]', 'parent']
 

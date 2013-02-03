@@ -9,6 +9,6 @@ function sum_numbers(N) {
 };
 
 x = 3000;
-x = 30000000;
+x = 300000000;
 print(sum_numbers(x));
 

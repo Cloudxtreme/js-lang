@@ -82,7 +82,7 @@ class CompilerContext(object):
 
 
 class ByteCode(object):
-    _immutable_fields_ = ['code', 'names[*]', 'constants_float', 'constants_fn']
+    #_immutable_fields_ = ['code', 'names[*]', 'constants_float', 'constants_fn']
 
     def __init__(self, code, names, constants_float, constants_fn,
             co_name=None, co_filename=None, co_firstlineno=0):
