@@ -7,5 +7,5 @@ def sum_numbers(N):
     return s
 
 
-print sum_numbers(7000000)
+print sum_numbers(30000000)
 
