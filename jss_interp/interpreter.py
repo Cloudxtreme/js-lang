@@ -16,19 +16,21 @@ def get_printable_location(pc, code, bc):
 jitdriver = jit.JitDriver(
         greens=['pc', 'code', 'bc'],
         reds=['frame'],
+        virtualizables=['frame'],
         get_printable_location=get_printable_location)
 
 
 class Frame(object):
     #_immutable_fields_ = ['names', 'parent']
-    #_virtualizable2_ = ['valuestack[*]', 'valuestack_pos', 'vars[*]']
+    _virtualizable2_ = ['valuestack[*]', 'valuestack_pos', 'vars[*]',
+            'names[*]', 'parent']
 
     def __init__(self, bc, parent=None):
-        #self = jit.hint(self, fresh_virtualizable=True, access_directly=True)
+        self = jit.hint(self, fresh_virtualizable=True, access_directly=True)
         self.valuestack = [None] * 255 # can not grow larger?
         self.valuestack_pos = 0
         self.names = bc.names
-        self.vars = [None] * len(self.names)
+        self.vars = [None] * len(bc.names)
         self.parent = parent
 
     def push(self, v):
@@ -64,11 +66,11 @@ class Frame(object):
 
     def lookup_by_name(self, name):
         # linear search
-        try:
-            return self.vars[self.names.index(name)]
-        except ValueError:
-            if self.parent:
-                return self.parent.lookup_by_name(name)
+        for i, n in enumerate(self.names):
+            if n == name:
+                return self.vars[i]
+        if self.parent:
+            return self.parent.lookup_by_name(name)
 
     def call(self, fn, arg_list):
         frame = Frame(fn.bytecode, parent=fn.parent_frame)

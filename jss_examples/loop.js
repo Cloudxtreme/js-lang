@@ -8,5 +8,7 @@ function sum_numbers(N) {
     return sum;
 };
 
-print(sum_numbers(30000000));
+x = 3000;
+x = 30000000;
+print(sum_numbers(x));
 
