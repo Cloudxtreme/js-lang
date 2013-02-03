@@ -50,6 +50,8 @@ class W_Numeric(W_Root):
 
 
 class W_BoolObject(W_Numeric):
+    _immutable_fields_ = ['boolval']
+
     def __init__(self, boolval):
         self.boolval = bool(boolval)
 
@@ -68,6 +70,8 @@ class W_BoolObject(W_Numeric):
 
 
 class W_FloatObject(W_Numeric):
+    _immutable_fields_ = ['floatval']
+
     def __init__(self, floatval):
         self.floatval = floatval
 

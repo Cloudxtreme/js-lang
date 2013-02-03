@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 
-from pypy.rlib.jit import JitDriver
+from pypy.rlib import jit
 
 from jss_interp import parser
 from jss_interp import bytecode
@@ -13,24 +13,37 @@ def get_printable_location(pc, code, bc):
     return '%s #%d %s' % (bc.get_repr(), pc, bytecode.dis_one(code[pc]))
 
 
-jitdriver = JitDriver(
+jitdriver = jit.JitDriver(
         greens=['pc', 'code', 'bc'],
         reds=['frame'],
         get_printable_location=get_printable_location)
 
 
 class Frame(object):
+    _immutable_fields_ = ['names', 'parent']
+    #_virtualizable2_ = ['valuestack[*]', 'valuestack_pos', 'vars[*]']
+
     def __init__(self, bc, parent=None):
-        self.valuestack = []
+        #self = jit.hint(self, fresh_virtualizable=True, access_directly=True)
+        self.valuestack = [None] * 255 # can not grow larger?
+        self.valuestack_pos = 0
         self.names = bc.names
         self.vars = [None] * len(self.names)
         self.parent = parent
 
     def push(self, v):
-        self.valuestack.append(v)
+        pos = jit.hint(self.valuestack_pos, promote=True)
+        assert pos >= 0
+        self.valuestack[pos] = v
+        self.valuestack_pos = pos + 1
     
     def pop(self):
-        return self.valuestack.pop()
+        pos = jit.hint(self.valuestack_pos, promote=True)
+        new_pos = pos - 1
+        assert new_pos >= 0
+        v = self.valuestack[new_pos]
+        self.valuestack_pos = new_pos
+        return v
 
     def lookup(self, arg):
         value = self._lookup(arg)
