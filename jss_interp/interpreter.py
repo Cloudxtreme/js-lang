@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 
-from pypy.rlib import jit
+from rpython.rlib import jit
 
 from jss_interp import parser
 from jss_interp import bytecode

@@ -4,7 +4,7 @@
 '''
 
 import sys
-from pypy.rlib.streamio import open_file_as_stream
+from rpython.rlib.streamio import open_file_as_stream
 
 from jss_interp.interpreter import main
 
@@ -25,7 +25,7 @@ def target(driver, args):
 
 
 def jitpolicy(driver):
-    from pypy.jit.codewriter.policy import JitPolicy
+    from rpython.jit.codewriter.policy import JitPolicy
     return JitPolicy()
 
 

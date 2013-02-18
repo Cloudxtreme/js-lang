@@ -1,9 +1,9 @@
 # -*- encoding: utf-8 -*-
 
-from pypy.rlib.parsing.ebnfparse import parse_ebnf, make_parse_function
-from pypy.rlib.parsing.deterministic import LexerError
-from pypy.rlib.parsing.parsing import ParseError
-from pypy.rlib.parsing.tree import Symbol
+from rpython.rlib.parsing.ebnfparse import parse_ebnf, make_parse_function
+from rpython.rlib.parsing.deterministic import LexerError
+from rpython.rlib.parsing.parsing import ParseError
+from rpython.rlib.parsing.tree import Symbol
 
 from jss_interp import bytecode
 
