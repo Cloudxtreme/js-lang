@@ -26,7 +26,7 @@ class Frame(object):
 
     def __init__(self, bc, parent=None):
         self = jit.hint(self, fresh_virtualizable=True, access_directly=True)
-        self.valuestack = [None] * 255 # TODO - get upper bound staticaly
+        self.valuestack = [None] * 10 # TODO - get upper bound staticaly
         self.valuestack_pos = 0
         self.names = bc.names
         self.vars = [None] * len(bc.names)
