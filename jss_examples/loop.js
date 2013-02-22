@@ -15,7 +15,7 @@ function sum_numbers_bridge(N) {
     sum = 0;
     i = 0;
     while (i < N) {
-        if (i % 3) {
+        if (i % 2) {
             sum = sum + i;
         }
         i = i + 1;
