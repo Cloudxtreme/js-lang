@@ -23,7 +23,8 @@ def test_parse_variable():
 
 def test_parse_number():
     for num, value in [
-            ('0', 0.0), ('1', 1.0), ('.123', .123), ('123.123', 123.123)]:
+            ('0', 0.0), ('1', 1.0), ('.123', .123), ('123.123', 123.123),
+            ('+12', 12.0), ('-.12', -0.12)]:
         result = parser.parse('%s;' % num) 
         assert result == Block([Stmt(ConstantNum(value))])
 

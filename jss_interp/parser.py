@@ -32,7 +32,9 @@ statement:
     | "return" ";";
 
 expr: 
-    additive COMP_OPER expr | additive;
+    ADD_OPER expr | unary;
+unary: 
+    additive COMP_OPER unary | additive;
 additive: 
     multitive ADD_OPER additive | multitive;
 multitive: 
@@ -133,6 +135,20 @@ class BinOp(AstNode):
         self.left.compile(ctx)
         self.right.compile(ctx)
         ctx.emit(bytecode.BINOP[self.op])
+
+
+class UnOp(AstNode):
+    ''' Binary operation
+    '''
+    _fields = ('op', 'expr')
+
+    def __init__(self, op, expr):
+        self.op = op
+        self.expr = expr
+
+    def compile(self, ctx):
+        self.expr.compile(ctx)
+        ctx.emit(bytecode.UNOP[self.op])
 
 
 class Variable(AstNode):
@@ -342,7 +358,14 @@ class Transformer(object):
                         Block(stmts), self.filename, co_firstlineno)
             else:
                 raise NotImplementedError
-        elif len(node.children) == 3:
+        elif len(node.children) == 2: # unary op
+            op = node.children[0].additional_info
+            expr = self.visit_expr(node.children[1])
+            if isinstance(expr, ConstantNum):
+                return ConstantNum(-expr.floatval) if op == '-' else expr
+            else:
+                return UnOp(op, expr)
+        elif len(node.children) == 3: # binary op or (expr)
             is_par_expr = True
             for c, br in [(node.children[0], '('), (node.children[2], ')')]:
                 if not (isinstance(c, Symbol) and c.additional_info == br):
