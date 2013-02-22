@@ -71,6 +71,7 @@ class Frame(object):
         if self.parent:
             return self.parent.lookup_by_name(name)
 
+    @jit.unroll_safe
     def call(self, fn, arg_list):
         frame = Frame(fn.bytecode, parent=fn.parent_frame)
         for i, value in enumerate(arg_list):
