@@ -40,7 +40,8 @@ class W_Numeric(W_Root):
         return W_FloatObject(self.get_floatval() / other.get_floatval())
 
     def mod(self, other):
-        return W_FloatObject(self.get_floatval() % other.get_floatval())
+        return W_FloatObject(float(
+            int(self.get_floatval()) % int(other.get_floatval())))
 
     def lt(self, other):
         return W_BoolObject(self.get_floatval() < other.get_floatval())
