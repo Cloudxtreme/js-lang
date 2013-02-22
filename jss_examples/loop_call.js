@@ -1,8 +1,13 @@
+
+function calc_sum(a, b) {
+    return a + b;
+};
+
 function sum_numbers(N) {
     sum = 0;
     i = 0;
     while (i < N) {
-        sum = sum + i;
+        sum = calc_sum(sum, i);
         i = i + 1;
     }
     return sum;
