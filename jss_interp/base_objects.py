@@ -39,14 +39,14 @@ class W_Numeric(W_Root):
     def div(self, other):
         return W_FloatObject(self.get_floatval() / other.get_floatval())
 
+    def mod(self, other):
+        return W_FloatObject(self.get_floatval() % other.get_floatval())
+
     def lt(self, other):
         return W_BoolObject(self.get_floatval() < other.get_floatval())
 
     def eq(self, other):
         return W_BoolObject(self.get_floatval() == other.get_floatval())
-
-    def mod(self, other):
-        return W_BoolObject(self.get_floatval() % other.get_floatval())
 
     def get_floatval(self):
         raise NotImplementedError

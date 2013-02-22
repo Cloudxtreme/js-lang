@@ -170,12 +170,12 @@ def test_arithmetic_expressions():
     x = 10;
     y = 4 + x * 2;
     z = (x + y) / x + 3;
-    foo = y % 3 + y % 1 + y % 2;
+    foo = y % 5 + y % 1 + y % 2;
     ''')
     x = 10.0
     y = 4 + x * 2
     z = (x + y) / x + 3
-    foo = y % 3 + y % 1 + y % 2
+    foo = y % 5 + y % 1 + y % 2
     assert frame.names == ['x', 'y', 'z', 'foo']
     assert frame.vars == map(W_FloatObject, [x, y, z, foo])
     assert frame.test_valuestack == []
