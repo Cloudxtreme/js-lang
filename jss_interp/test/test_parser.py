@@ -15,7 +15,7 @@ def test_parse_variable():
         with pytest.raises(parser.ParseError):
             parser.parse('%s;' % invalid_var_name) 
     for invalid_var_name in ('%',):
-        with pytest.raises(parser.LexerError):
+        with pytest.raises(parser.ParseError):
             parser.parse('%s;' % invalid_var_name) 
     for not_var_name in ('123',):
         assert result != Block([Stmt(Variable(not_var_name))])
@@ -107,6 +107,9 @@ def test_parse_binop():
     result = parser.parse('x = x - 2;')
     assert result == Block([Assignment('x', 
         BinOp('-', Variable('x'), ConstantNum(2.0)))])
+    result = parser.parse('x = y % 2;')
+    assert result == Block([Assignment('x', 
+        BinOp('%', Variable('y'), ConstantNum(2.0)))])
     result = parser.parse('while (x == y) { }')
     assert result == Block([While(
         BinOp('==', Variable('x'), Variable('y')), Block([]))])

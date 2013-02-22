@@ -6,8 +6,9 @@ old_globals = dict(globals())
 LOAD_CONSTANT_FLOAT, LOAD_CONSTANT_FN, LOAD_VAR, ASSIGN, \
 DISCARD_TOP, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE, \
 BINARY_ADD, BINARY_SUB, BINARY_MUL, BINARY_DIV, BINARY_EQ, BINARY_LT, \
+BINARY_MOD, \
 CALL, MAKE_FN \
-= range(16)
+= range(17)
 
 bytecodes = dict((globals()[f], f) for f in globals() 
         if f not in old_globals and f != 'old_globals')
@@ -20,6 +21,7 @@ BINOP = {
         '/': BINARY_DIV, 
         '==': BINARY_EQ, 
         '<': BINARY_LT,
+        '%': BINARY_MOD,
         }
 
 

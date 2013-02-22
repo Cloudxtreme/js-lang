@@ -5,7 +5,7 @@ from jss_interp.parser import ConstantNum, Variable, Assignment, Stmt, Block, \
 from jss_interp.bytecode import CompilerContext, dis, to_code, \
         LOAD_CONSTANT_FLOAT, LOAD_CONSTANT_FN, RETURN, LOAD_VAR, ASSIGN, \
         DISCARD_TOP, BINARY_ADD, BINARY_EQ, BINARY_LT, BINARY_MUL, \
-        BINARY_SUB, BINARY_DIV, JUMP_IF_FALSE, JUMP_ABSOLUTE, CALL
+        BINARY_SUB, BINARY_DIV, BINARY_MOD, JUMP_IF_FALSE, JUMP_ABSOLUTE, CALL
 
 
 compile_ast = CompilerContext.compile_ast
@@ -63,6 +63,7 @@ def test_binop():
             ('-', BINARY_SUB),
             ('*', BINARY_MUL),
             ('/', BINARY_DIV),
+            ('%', BINARY_MOD),
             ]:
         bytecode = compile_ast(BinOp(op, Variable('x'), Variable('y')))
         assert bytecode.code == to_code([

@@ -45,6 +45,9 @@ class W_Numeric(W_Root):
     def eq(self, other):
         return W_BoolObject(self.get_floatval() == other.get_floatval())
 
+    def mod(self, other):
+        return W_BoolObject(self.get_floatval() % other.get_floatval())
+
     def get_floatval(self):
         raise NotImplementedError
 

@@ -145,6 +145,11 @@ def execute(frame, bc):
             left = frame.pop()
             frame.push(left.eq(right))
 
+        elif c == bytecode.BINARY_MOD:
+            right = frame.pop()
+            left = frame.pop()
+            frame.push(left.mod(right))
+
         elif c == bytecode.JUMP_IF_FALSE:
             if not frame.pop().is_true():
                 pc = arg
