@@ -364,6 +364,7 @@ class Transformer(object):
             if isinstance(expr, ConstantNum):
                 return ConstantNum(-expr.floatval) if op == '-' else expr
             else:
+                raise NotImplementedError
                 return UnOp(op, expr)
         elif len(node.children) == 3: # binary op or (expr)
             is_par_expr = True
