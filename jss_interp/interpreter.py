@@ -21,8 +21,8 @@ jitdriver = jit.JitDriver(
 
 
 class Frame(object):
-    _virtualizable2_ = ['valuestack[*]', 'valuestack_pos', 'vars[*]',
-            'names[*]', 'parent']
+    #_virtualizable2_ = ['valuestack[*]', 'valuestack_pos', 'vars[*]',
+    #        'names[*]', 'parent']
 
     def __init__(self, bc, parent=None):
         #self = jit.hint(self, fresh_virtualizable=True, access_directly=True)
