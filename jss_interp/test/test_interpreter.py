@@ -133,7 +133,7 @@ def test_binary_bool():
             ('<', lambda x, y: x < y),
             ('==', lambda x, y: x == y),
             ]:
-        for x, y in [(1.0, 2.5), (1.0, 1.0), (1.0, -1.0)]:
+        for x, y in [(1.0, 2.5), (1.0, 1.0), (1.0, 1.1)]:
             frame = interpret_source('''
             x = %s;
             y = %s;

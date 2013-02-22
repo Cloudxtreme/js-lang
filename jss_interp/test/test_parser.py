@@ -23,8 +23,7 @@ def test_parse_variable():
 
 def test_parse_number():
     for num, value in [
-            ('0', 0.0), ('1', 1.0), 
-            ('.1', .1), ('+0.', 0.), ('-10.3', -10.3)]:
+            ('0', 0.0), ('1', 1.0), ('.123', .123), ('123.123', 123.123)]:
         result = parser.parse('%s;' % num) 
         assert result == Block([Stmt(ConstantNum(value))])
 
@@ -105,6 +104,12 @@ def test_parse_binop():
     assert result == Block([Assignment('x', 
         BinOp('+', ConstantNum(1.0), ConstantNum(2.0)))])
     result = parser.parse('x = x - 2;')
+    assert result == Block([Assignment('x', 
+        BinOp('-', Variable('x'), ConstantNum(2.0)))])
+    result = parser.parse('x = 1+2;')
+    assert result == Block([Assignment('x', 
+        BinOp('+', ConstantNum(1.0), ConstantNum(2.0)))])
+    result = parser.parse('x = x-2;')
     assert result == Block([Assignment('x', 
         BinOp('-', Variable('x'), ConstantNum(2.0)))])
     result = parser.parse('x = y % 2;')
