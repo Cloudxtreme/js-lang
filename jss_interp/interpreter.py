@@ -153,9 +153,7 @@ def execute(frame, bc):
             pc = arg
 
         elif c == bytecode.CALL:
-            arg_list = []
-            for _ in xrange(arg):
-                arg_list.append(frame.pop())
+            arg_list = pop_args(frame, arg)
             fn = frame.pop()
             if isinstance(fn, W_BuilinFunction):
                 frame.push(fn.call(arg_list))
@@ -170,6 +168,14 @@ def execute(frame, bc):
 
         else:
             assert False
+
+
+@jit.unroll_safe
+def pop_args(frame, n_args):
+    arg_list = []
+    for _ in xrange(n_args):
+        arg_list.append(frame.pop())
+    return arg_list
 
 
 def interpret(bc):
