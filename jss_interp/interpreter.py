@@ -16,7 +16,7 @@ def get_printable_location(pc, code, bc):
 jitdriver = jit.JitDriver(
         greens=['pc', 'code', 'bc'],
         reds=['frame'],
-        virtualizables=['frame'],
+        #virtualizables=['frame'],
         get_printable_location=get_printable_location)
 
 
@@ -25,14 +25,22 @@ class Frame(object):
             'names[*]', 'parent']
 
     def __init__(self, bc, parent=None):
-        self = jit.hint(self, fresh_virtualizable=True, access_directly=True)
+        #self = jit.hint(self, fresh_virtualizable=True, access_directly=True)
         self.valuestack = [None] * 10 # TODO - get upper bound staticaly
         # TODO - or maybe have even smaller initial estimate and resize when needed?
-        self.valuestack_pos = 0
+        #self.valuestack_pos = 0
+        self.valuestack = [] #* 10 # TODO - get upper bound staticaly
         self.names = bc.names
         self.vars = [None] * len(bc.names)
         self.parent = parent
 
+    def push(self, v):
+        self.valuestack.append(v)
+
+    def pop(self):
+        return self.valuestack.pop()
+
+    """
     def push(self, v):
         pos = self.valuestack_pos
         assert pos >= 0
@@ -45,6 +53,7 @@ class Frame(object):
         v = self.valuestack[new_pos]
         self.valuestack_pos = new_pos
         return v
+        """
 
     def lookup(self, arg):
         value = self._lookup(arg)
@@ -80,7 +89,12 @@ class Frame(object):
     @property
     def test_valuestack(self):
         ''' NOT_RPYTHON '''
-        return self.valuestack[:self.valuestack_pos]
+        #return self.valuestack[:self.valuestack_pos]
+        return self.valuestack
+
+    @property
+    def valuestack_pos(self):
+        return len(self.valuestack)
 
 
 def execute(frame, bc):
