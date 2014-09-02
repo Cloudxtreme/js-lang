@@ -1,9 +1,11 @@
 syntax: glob
+
+*~
+*-c
+env/
+.cache
+.*.swp
 *.py[co]
 *.sw[po]
-*~
-.*.swp
-env/
 .hgignore
-*-c
 translate.py
