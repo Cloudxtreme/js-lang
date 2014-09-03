@@ -7,4 +7,4 @@ clean:
 	@rm -rf build dist *egg-info jsc
 
 jsc:
-	rpython --output=jsc js/target.py
+	@rpython --output=jsc js/target.py
