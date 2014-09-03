@@ -22,41 +22,41 @@ VARIABLE: "[a-zA-Z_][a-zA-Z0-9_]*";
 
 main: statement* [EOF];
 
-statement: 
-      expr ";" 
-    | VARIABLE "=" expr ";" 
-    | "while" "(" expr ")" "{" statement* "}" 
+statement:
+      expr ";"
+    | VARIABLE "=" expr ";"
+    | "while" "(" expr ")" "{" statement* "}"
     | "if" "(" expr ")" "{" statement* "}" "else" "{" statement* "}"
     | "if" "(" expr ")" "{" statement* "}"
     | "return" expr ";"
     | "return" ";";
 
-expr: 
+expr:
     ADD_OPER expr | unary;
-unary: 
+unary:
     additive COMP_OPER unary | additive;
-additive: 
+additive:
     multitive ADD_OPER additive | multitive;
-multitive: 
+multitive:
     call MULT_OPER multitive | call;
 
-call: 
+call:
     fndef "(" csexpr ")" | fndef "(" ")" | fndef;
-csexpr: 
+csexpr:
     expr "," csexpr | expr;
 
-fndef: 
-      "function" VARIABLE "(" csvar ")" "{" statement* "}" 
-    | "function" VARIABLE "(" ")" "{" statement* "}" 
+fndef:
+      "function" VARIABLE "(" csvar ")" "{" statement* "}"
+    | "function" VARIABLE "(" ")" "{" statement* "}"
     | primary;
-csvar: 
+csvar:
     VARIABLE "," csvar | VARIABLE;
 
-primary: 
-      "(" expr ")" 
+primary:
+      "(" expr ")"
     | atom;
 atom:
-      FLOAT_NUMBER 
+      FLOAT_NUMBER
     | VARIABLE;
 
 '''
@@ -66,23 +66,25 @@ _parse = make_parse_function(regexs, rules, eof=True)
 
 
 class AstNode(object):
+
     ''' Abstract syntax tree node
     '''
     _fields = ()
 
     def __eq__(self, other):
-        return type(self) == type(other) and \
-                self.__dict__ == other.__dict__
+        return isinstance(self, type(other)) and \
+            self.__dict__ == other.__dict__
 
     def __repr__(self):
         return '<%s %s>' % (type(self).__name__,
-                '; '.join('%s: %r' % (field, getattr(self, field))
-                    for field in self._fields) 
-                if len(self._fields) > 1 else 
-                repr(getattr(self, self._fields[0])))
+                            '; '.join('%s: %r' % (field, getattr(self, field))
+                                      for field in self._fields)
+                            if len(self._fields) > 1 else
+                            repr(getattr(self, self._fields[0])))
 
 
 class Block(AstNode):
+
     ''' List of statements
     '''
     _fields = ('stmts',)
@@ -96,6 +98,7 @@ class Block(AstNode):
 
 
 class Stmt(AstNode):
+
     ''' Single statement
     '''
     _fields = ('expr',)
@@ -109,19 +112,21 @@ class Stmt(AstNode):
 
 
 class ConstantNum(AstNode):
+
     ''' Numeric constant
     '''
     _fields = ('floatval',)
-    
+
     def __init__(self, floatval):
         self.floatval = floatval
 
     def compile(self, ctx):
-        ctx.emit(bytecode.LOAD_CONSTANT_FLOAT, 
+        ctx.emit(bytecode.LOAD_CONSTANT_FLOAT,
                  ctx.register_constant_float(self.floatval))
 
 
 class BinOp(AstNode):
+
     ''' Binary operation
     '''
     _fields = ('op', 'left', 'right')
@@ -138,6 +143,7 @@ class BinOp(AstNode):
 
 
 class UnOp(AstNode):
+
     ''' Binary operation
     '''
     _fields = ('op', 'expr')
@@ -152,6 +158,7 @@ class UnOp(AstNode):
 
 
 class Variable(AstNode):
+
     ''' Variable reference
     '''
     _fields = ('varname',)
@@ -164,6 +171,7 @@ class Variable(AstNode):
 
 
 class Assignment(AstNode):
+
     ''' Assign to a variable
     '''
     _fields = ('varname', 'expr')
@@ -178,7 +186,8 @@ class Assignment(AstNode):
 
 
 class Call(AstNode):
-    ''' Function call with a list of arguments 
+
+    ''' Function call with a list of arguments
     '''
     _fields = ('fn', 'args',)
 
@@ -194,6 +203,7 @@ class Call(AstNode):
 
 
 class If(AstNode):
+
     ''' If expression with optional else part
     '''
     _fields = ('cond', 'body', 'else_block')
@@ -205,20 +215,21 @@ class If(AstNode):
 
     def compile(self, ctx):
         self.cond.compile(ctx)
-        ctx.emit(bytecode.JUMP_IF_FALSE, 0) # to be patched later (1)
+        ctx.emit(bytecode.JUMP_IF_FALSE, 0)  # to be patched later (1)
         jump_pos = len(ctx.data) - 1
         self.body.compile(ctx)
         jump_abs_pos = 0
         if self.else_block:
-            ctx.emit(bytecode.JUMP_ABSOLUTE, 0) # to be patched later (2)
+            ctx.emit(bytecode.JUMP_ABSOLUTE, 0)  # to be patched later (2)
             jump_abs_pos = len(ctx.data) - 1
-        ctx.data[jump_pos] = len(ctx.data) # patch (1)
+        ctx.data[jump_pos] = len(ctx.data)  # patch (1)
         if self.else_block:
             self.else_block.compile(ctx)
-            ctx.data[jump_abs_pos] = len(ctx.data) # patch (2)
+            ctx.data[jump_abs_pos] = len(ctx.data)  # patch (2)
 
 
 class While(AstNode):
+
     ''' While loop
     '''
     _fields = ('cond', 'body')
@@ -230,20 +241,21 @@ class While(AstNode):
     def compile(self, ctx):
         cond_pos = len(ctx.data)
         self.cond.compile(ctx)
-        ctx.emit(bytecode.JUMP_IF_FALSE, 0) # to be patched later
+        ctx.emit(bytecode.JUMP_IF_FALSE, 0)  # to be patched later
         jump_pos = len(ctx.data) - 1
         self.body.compile(ctx)
         ctx.emit(bytecode.JUMP_ABSOLUTE, cond_pos)
-        ctx.data[jump_pos] = len(ctx.data) # patch
+        ctx.data[jump_pos] = len(ctx.data)  # patch
 
 
 class FnDef(AstNode):
+
     ''' Function definition
     '''
     _fields = ('name', 'arg_list', 'body', 'co_filename', 'co_firstlineno')
 
-    def __init__(self, name, arg_list, body, 
-            co_filename, co_firstlineno):
+    def __init__(self, name, arg_list, body,
+                 co_filename, co_firstlineno):
         self.name = name
         self.arg_list = arg_list
         self.body = body
@@ -258,10 +270,11 @@ class FnDef(AstNode):
             co_firstlineno=self.co_firstlineno))
         ctx.emit(bytecode.LOAD_CONSTANT_FN, arg)
         ctx.emit(bytecode.ASSIGN, ctx.register_var(self.name))
-        ctx.emit(bytecode.LOAD_CONSTANT_FN, arg) # case it is an expression
+        ctx.emit(bytecode.LOAD_CONSTANT_FN, arg)  # case it is an expression
 
 
 class Return(AstNode):
+
     ''' Return statement
     '''
     _fields = ('expr',)
@@ -278,9 +291,11 @@ class Return(AstNode):
 
 
 class Transformer(object):
+
     ''' Transforms AST from the obscure format given to us by the ebnfparser
     to something easier to work with
     '''
+
     def _grab_stmts(self, star):
         stmts = []
         if isinstance(star, Symbol) and star.additional_info == '}':
@@ -290,7 +305,7 @@ class Transformer(object):
             star = star.children[1]
         stmts.append(self.visit_stmt(star.children[0]))
         return stmts
-    
+
     def visit_main(self, node):
         stmts = self._grab_stmts(node.children[0])
         return Block(stmts)
@@ -341,24 +356,24 @@ class Transformer(object):
         elif node.symbol == 'fndef':
             co_firstlineno = node.getsourcepos().lineno
             fn_name = node.children[1].additional_info
-            if len(node.children) == 6: # foo() {};
-                return FnDef(fn_name, [], Block([]), 
-                    self.filename, co_firstlineno)
-            elif len(node.children) == 7: # foo(x) {}; or foo() {x;}
+            if len(node.children) == 6:  # foo() {};
+                return FnDef(fn_name, [], Block([]),
+                             self.filename, co_firstlineno)
+            elif len(node.children) == 7:  # foo(x) {}; or foo() {x;}
                 if node.children[3].symbol == 'csvar':
                     return FnDef(fn_name, self.visit_csvar(node.children[3]),
-                            Block([]), self.filename, co_firstlineno)
+                                 Block([]), self.filename, co_firstlineno)
                 else:
                     stmts = self._grab_stmts(node.children[5])
                     return FnDef(fn_name, [], Block(stmts),
-                        self.filename, co_firstlineno)
-            elif len(node.children) == 8: # foo(x) {x;}
+                                 self.filename, co_firstlineno)
+            elif len(node.children) == 8:  # foo(x) {x;}
                 stmts = self._grab_stmts(node.children[6])
                 return FnDef(fn_name, self.visit_csvar(node.children[3]),
-                        Block(stmts), self.filename, co_firstlineno)
+                             Block(stmts), self.filename, co_firstlineno)
             else:
                 raise NotImplementedError
-        elif len(node.children) == 2: # unary op
+        elif len(node.children) == 2:  # unary op
             op = node.children[0].additional_info
             expr = self.visit_expr(node.children[1])
             if isinstance(expr, ConstantNum):
@@ -366,7 +381,7 @@ class Transformer(object):
             else:
                 raise NotImplementedError
                 return UnOp(op, expr)
-        elif len(node.children) == 3: # binary op or (expr)
+        elif len(node.children) == 3:  # binary op or (expr)
             is_par_expr = True
             for c, br in [(node.children[0], '('), (node.children[2], ')')]:
                 if not (isinstance(c, Symbol) and c.additional_info == br):
@@ -376,8 +391,8 @@ class Transformer(object):
                 return self.visit_expr(node.children[1])
             else:
                 return BinOp(node.children[1].additional_info,
-                            self.visit_expr(node.children[0]),
-                            self.visit_expr(node.children[2]))
+                             self.visit_expr(node.children[0]),
+                             self.visit_expr(node.children[2]))
         else:
             raise NotImplementedError
 
@@ -409,7 +424,6 @@ class Transformer(object):
         raise NotImplementedError
 
 
-
 def parse(source, filename=None):
     ''' Parse the source code and produce an AST
     '''
@@ -419,4 +433,3 @@ def parse(source, filename=None):
         return transformer.visit_main(_parse(source))
     except (LexerError, ParseError):
         raise
-

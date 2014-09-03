@@ -5,7 +5,7 @@ from rpython.rlib import jit
 from js import parser
 from js import bytecode
 from js.base_objects import OperationalError, \
-        W_FloatObject, W_Function, W_BuilinFunction
+    W_FloatObject, W_Function, W_BuilinFunction
 from js.builtins import BUILTINS
 
 
@@ -14,20 +14,21 @@ def get_printable_location(pc, code, bc):
 
 
 jitdriver = jit.JitDriver(
-        greens=['pc', 'code', 'bc'],
-        reds=['frame'],
-        virtualizables=['frame'],
-        get_printable_location=get_printable_location)
+    greens=['pc', 'code', 'bc'],
+    reds=['frame'],
+    virtualizables=['frame'],
+    get_printable_location=get_printable_location)
 
 
 class Frame(object):
     _virtualizable2_ = ['valuestack[*]', 'valuestack_pos', 'vars[*]',
-            'names[*]', 'parent']
+                        'names[*]', 'parent']
 
     def __init__(self, bc, parent=None):
         self = jit.hint(self, fresh_virtualizable=True, access_directly=True)
-        self.valuestack = [None] * 10 # TODO - get upper bound staticaly
-        # TODO - or maybe have even smaller initial estimate and resize when needed?
+        self.valuestack = [None] * 10  # TODO - get upper bound staticaly
+        # TODO - or maybe have even smaller initial estimate and resize when
+        # needed?
         self.valuestack_pos = 0
         self.names = bc.names
         self.vars = [None] * len(bc.names)
@@ -38,7 +39,7 @@ class Frame(object):
         assert pos >= 0
         self.valuestack[pos] = v
         self.valuestack_pos = pos + 1
-    
+
     def pop(self):
         new_pos = self.valuestack_pos - 1
         assert new_pos >= 0
@@ -54,7 +55,7 @@ class Frame(object):
             if value is None:
                 raise OperationalError('Variable "%s" is not defined' % name)
         return value
-    
+
     def _lookup(self, arg):
         value = self.vars[arg]
         if value is not None:
@@ -85,13 +86,13 @@ class Frame(object):
 
 
 def execute(frame, bc):
-    #print '\n', bytecode.dis(bc.code), '\n'
+    # print '\n', bytecode.dis(bc.code), '\n'
     code = bc.code
     pc = 0
     while True:
 
         jitdriver.jit_merge_point(
-                pc=pc, code=code, bc=bc, frame=frame)
+            pc=pc, code=code, bc=bc, frame=frame)
 
         c = ord(code[pc])
         arg = ord(code[pc + 1])
@@ -169,7 +170,7 @@ def execute(frame, bc):
             if arg:
                 return frame.pop()
             else:
-                return None # TODO - undefined
+                return None  # TODO - undefined
 
         else:
             assert False
@@ -201,7 +202,7 @@ def run(source, filename=None):
     except parser.LexerError as e:
         print 'LexerError', e
         return 1
-    except parser.ParseError as e: 
+    except parser.ParseError as e:
         print 'ParseError', e
         return 1
     except OperationalError as e:

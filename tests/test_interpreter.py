@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 from js.bytecode import to_code, ByteCode, \
-        LOAD_CONSTANT_FLOAT, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE
+    LOAD_CONSTANT_FLOAT, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE
 from js.interpreter import Frame, interpret, interpret_source
 from js.base_objects import W_FloatObject, W_BoolObject
 
@@ -24,15 +24,16 @@ def test_frame():
     assert res is y
     assert frame.valuestack_pos == 1
 
+
 def test_load_constant():
     bc = ByteCode(to_code([
         LOAD_CONSTANT_FLOAT, 0,
-        RETURN, 0]), 
+        RETURN, 0]),
         [], [12.2], [])
     frame = interpret(bc)
     assert frame.test_valuestack == [W_FloatObject(12.2)]
     assert frame.vars == []
-    
+
 
 def test_assignment():
     frame = interpret_source('x = 2.71;')
@@ -132,7 +133,7 @@ def test_binary_bool():
     for binary_op, check_fn in [
             ('<', lambda x, y: x < y),
             ('==', lambda x, y: x == y),
-            ]:
+    ]:
         for x, y in [(1.0, 2.5), (1.0, 1.0), (1.0, 1.1)]:
             frame = interpret_source('''
             x = %s;
@@ -141,8 +142,8 @@ def test_binary_bool():
             ''' % (x, y, binary_op))
             assert frame.names == ['x', 'y', 'res']
             assert frame.vars == [
-                    W_FloatObject(x), W_FloatObject(y),
-                    W_BoolObject(check_fn(x, y))]
+                W_FloatObject(x), W_FloatObject(y),
+                W_BoolObject(check_fn(x, y))]
             assert frame.test_valuestack == []
 
 
@@ -180,7 +181,7 @@ def test_arithmetic_expressions():
     assert frame.vars == map(W_FloatObject, [x, y, z, foo])
     assert frame.test_valuestack == []
 
-    
+
 def test_fn_noop():
     frame = interpret_source('''
     function foo() {};
@@ -305,4 +306,3 @@ def test_recursion():
     assert frame.vars[3] == W_FloatObject(2.0)
     assert frame.vars[4] == W_FloatObject(3.0)
     assert frame.vars[5] == W_FloatObject(55.0)
-

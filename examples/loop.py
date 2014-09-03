@@ -8,4 +8,3 @@ def sum_numbers(N):
 
 
 print sum_numbers(30000000)
-

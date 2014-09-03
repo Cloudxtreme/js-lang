@@ -10,6 +10,7 @@ class OperationalError(Exception):
 
 
 class W_Root(object):
+
     def is_true(self):
         raise NotImplementedError
 
@@ -27,6 +28,7 @@ class W_Root(object):
 
 
 class W_Numeric(W_Root):
+
     def add(self, other):
         return W_FloatObject(self.get_floatval() + other.get_floatval())
 
@@ -70,7 +72,7 @@ class W_BoolObject(W_Numeric):
 
     def __eq__(self, other):
         ''' NOT_RPYTHON '''
-        return type(self) == type(other) and self.boolval == other.boolval
+        return isinstance(self, type(other)) and self.boolval == other.boolval
 
 
 class W_FloatObject(W_Numeric):
@@ -90,21 +92,22 @@ class W_FloatObject(W_Numeric):
 
     def __eq__(self, other):
         ''' NOT_RPYTHON '''
-        return type(self) == type(other) and self.floatval == other.floatval
+        return isinstance(
+            self, type(other)) and self.floatval == other.floatval
 
     def __repr__(self):
         ''' NOT_RPYTHON '''
         return '<%s: %f>' % (type(self).__name__, self.floatval)
 
 
-
 class W_BuilinFunction(W_Root):
+
     def call(self, arg_list):
         raise NotImplementedError
 
 
 class W_Function(W_Root):
+
     def __init__(self, bytecode, parent_frame):
         self.bytecode = bytecode
         self.parent_frame = parent_frame
-

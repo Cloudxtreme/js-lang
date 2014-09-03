@@ -2,8 +2,8 @@
 
 from js import parser
 from js.bytecode import LOAD_VAR, LOAD_CONSTANT_FLOAT, \
-        CALL, LOAD_CONSTANT_FN, ASSIGN, DISCARD_TOP, RETURN, BINARY_ADD, \
-        CompilerContext, to_code
+    CALL, LOAD_CONSTANT_FN, ASSIGN, DISCARD_TOP, RETURN, BINARY_ADD, \
+    CompilerContext, to_code
 from js.interpreter import get_printable_location
 
 
