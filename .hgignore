@@ -4,6 +4,7 @@ syntax: glob
 jsc
 env/
 dict
+*.jsc
 *.bak
 build
 .cache
