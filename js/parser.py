@@ -5,7 +5,7 @@ from rpython.rlib.parsing.deterministic import LexerError
 from rpython.rlib.parsing.parsing import ParseError
 from rpython.rlib.parsing.tree import Symbol
 
-from jss_interp import bytecode
+from js import bytecode
 
 
 grammar = r'''

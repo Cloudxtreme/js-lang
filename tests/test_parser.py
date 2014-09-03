@@ -2,8 +2,8 @@
 
 import pytest
 
-from jss_interp import parser
-from jss_interp.parser import Block, Stmt, Variable, ConstantNum, While, \
+from js import parser
+from js.parser import Block, Stmt, Variable, ConstantNum, While, \
         Assignment, If, Call, BinOp, FnDef, Return
 
 

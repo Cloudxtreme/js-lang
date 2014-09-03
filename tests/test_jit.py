@@ -1,10 +1,10 @@
 # -*- encoding: utf-8 -*-
 
-from jss_interp import parser
-from jss_interp.bytecode import LOAD_VAR, LOAD_CONSTANT_FLOAT, \
+from js import parser
+from js.bytecode import LOAD_VAR, LOAD_CONSTANT_FLOAT, \
         CALL, LOAD_CONSTANT_FN, ASSIGN, DISCARD_TOP, RETURN, BINARY_ADD, \
         CompilerContext, to_code
-from jss_interp.interpreter import get_printable_location
+from js.interpreter import get_printable_location
 
 
 def test_get_location():

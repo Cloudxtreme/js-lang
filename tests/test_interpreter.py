@@ -1,9 +1,9 @@
 # -*- encoding: utf-8 -*-
 
-from jss_interp.bytecode import to_code, ByteCode, \
+from js.bytecode import to_code, ByteCode, \
         LOAD_CONSTANT_FLOAT, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE
-from jss_interp.interpreter import Frame, interpret, interpret_source
-from jss_interp.base_objects import W_FloatObject, W_BoolObject
+from js.interpreter import Frame, interpret, interpret_source
+from js.base_objects import W_FloatObject, W_BoolObject
 
 
 def test_frame():

@@ -1,11 +1,15 @@
 syntax: glob
 
 *~
-*-c
+jsc
 env/
+dict
+*.bak
+build
 .cache
 .*.swp
 *.py[co]
 *.sw[po]
 .hgignore
+*.egg-info
 translate.py

@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 
-from jss_interp.base_objects import W_BuilinFunction
+from js.base_objects import W_BuilinFunction
 
 
 class W_PrintFn(W_BuilinFunction):

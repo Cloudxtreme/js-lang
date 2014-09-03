@@ -2,11 +2,11 @@
 
 from rpython.rlib import jit
 
-from jss_interp import parser
-from jss_interp import bytecode
-from jss_interp.base_objects import OperationalError, \
+from js import parser
+from js import bytecode
+from js.base_objects import OperationalError, \
         W_FloatObject, W_Function, W_BuilinFunction
-from jss_interp.builtins import BUILTINS
+from js.builtins import BUILTINS
 
 
 def get_printable_location(pc, code, bc):
@@ -195,7 +195,7 @@ def interpret_source(source, filename=None):
     return interpret(bc)
 
 
-def main(source, filename=None):
+def run(source, filename=None):
     try:
         interpret_source(source, filename=filename)
     except parser.LexerError as e:
