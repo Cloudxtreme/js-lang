@@ -1,12 +1,14 @@
 # -*- encoding: utf-8 -*-
 
+
 from rpython.rlib import jit
+
 
 from js import parser
 from js import bytecode
-from js.base_objects import OperationalError, \
-    W_FloatObject, W_Function, W_BuilinFunction
 from js.builtins import BUILTINS
+from js.base_objects import OperationalError
+from js.base_objects import W_FloatObject, W_Function, W_BuilinFunction
 
 
 def get_printable_location(pc, code, bc):
@@ -21,6 +23,7 @@ jitdriver = jit.JitDriver(
 
 
 class Frame(object):
+
     _virtualizable2_ = ['valuestack[*]', 'valuestack_pos', 'vars[*]',
                         'names[*]', 'parent']
 
@@ -82,17 +85,15 @@ class Frame(object):
     @property
     def test_valuestack(self):
         ''' NOT_RPYTHON '''
+
         return self.valuestack[:self.valuestack_pos]
 
 
-def execute(frame, bc):
-    # print '\n', bytecode.dis(bc.code), '\n'
+def execute(frame, bc):  # noqa
     code = bc.code
     pc = 0
     while True:
-
-        jitdriver.jit_merge_point(
-            pc=pc, code=code, bc=bc, frame=frame)
+        jitdriver.jit_merge_point(pc=pc, code=code, bc=bc, frame=frame)
 
         c = ord(code[pc])
         arg = ord(code[pc + 1])
@@ -100,64 +101,50 @@ def execute(frame, bc):
 
         if c == bytecode.LOAD_CONSTANT_FLOAT:
             frame.push(W_FloatObject(bc.constants_float[arg]))
-
         elif c == bytecode.LOAD_CONSTANT_FN:
             frame.push(W_Function(bc.constants_fn[arg], frame))
-
         elif c == bytecode.LOAD_VAR:
             frame.push(frame.lookup(arg))
-
         elif c == bytecode.ASSIGN:
             frame.vars[arg] = frame.pop()
-
         elif c == bytecode.DISCARD_TOP:
             frame.pop()
 
         # TODO - remove repition
-
         elif c == bytecode.BINARY_ADD:
             right = frame.pop()
             left = frame.pop()
             w_res = left.add(right)
             frame.push(w_res)
-
         elif c == bytecode.BINARY_SUB:
             right = frame.pop()
             left = frame.pop()
             frame.push(left.sub(right))
-
         elif c == bytecode.BINARY_MUL:
             right = frame.pop()
             left = frame.pop()
             frame.push(left.mul(right))
-
         elif c == bytecode.BINARY_DIV:
             right = frame.pop()
             left = frame.pop()
             frame.push(left.div(right))
-
         elif c == bytecode.BINARY_LT:
             right = frame.pop()
             left = frame.pop()
             frame.push(left.lt(right))
-
         elif c == bytecode.BINARY_EQ:
             right = frame.pop()
             left = frame.pop()
             frame.push(left.eq(right))
-
         elif c == bytecode.BINARY_MOD:
             right = frame.pop()
             left = frame.pop()
             frame.push(left.mod(right))
-
         elif c == bytecode.JUMP_IF_FALSE:
             if not frame.pop().is_true():
                 pc = arg
-
         elif c == bytecode.JUMP_ABSOLUTE:
             pc = arg
-
         elif c == bytecode.CALL:
             arg_list = pop_args(frame, arg)
             fn = frame.pop()
@@ -165,13 +152,11 @@ def execute(frame, bc):
                 frame.push(fn.call(arg_list))
             else:
                 frame.push(frame.call(fn, arg_list))
-
         elif c == bytecode.RETURN:
             if arg:
                 return frame.pop()
             else:
                 return None  # TODO - undefined
-
         else:
             assert False
 
