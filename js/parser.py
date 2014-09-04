@@ -1,66 +1,18 @@
 # -*- encoding: utf-8 -*-
 
+from os import path
+
+
 from rpython.rlib.parsing.ebnfparse import parse_ebnf, make_parse_function
 from rpython.rlib.parsing.deterministic import LexerError
 from rpython.rlib.parsing.parsing import ParseError
 from rpython.rlib.parsing.tree import Symbol
 
+
 from js import bytecode
 
 
-grammar = r'''
-
-IGNORE: "[ \t\n]";
-
-FLOAT_NUMBER: "0\.?[0-9]*|[1-9][0-9]*\.?[0-9]*|\.[0-9]+";
-
-ADD_OPER: "[+-]";
-MULT_OPER: "[*/%]";
-COMP_OPER: "(==)|(>=)|(<=)|>|<|(!=)";
-
-VARIABLE: "[a-zA-Z_][a-zA-Z0-9_]*";
-
-main: statement* [EOF];
-
-statement:
-      expr ";"
-    | VARIABLE "=" expr ";"
-    | "while" "(" expr ")" "{" statement* "}"
-    | "if" "(" expr ")" "{" statement* "}" "else" "{" statement* "}"
-    | "if" "(" expr ")" "{" statement* "}"
-    | "return" expr ";"
-    | "return" ";";
-
-expr:
-    ADD_OPER expr | unary;
-unary:
-    additive COMP_OPER unary | additive;
-additive:
-    multitive ADD_OPER additive | multitive;
-multitive:
-    call MULT_OPER multitive | call;
-
-call:
-    fndef "(" csexpr ")" | fndef "(" ")" | fndef;
-csexpr:
-    expr "," csexpr | expr;
-
-fndef:
-      "function" VARIABLE "(" csvar ")" "{" statement* "}"
-    | "function" VARIABLE "(" ")" "{" statement* "}"
-    | primary;
-csvar:
-    VARIABLE "," csvar | VARIABLE;
-
-primary:
-      "(" expr ")"
-    | atom;
-atom:
-      FLOAT_NUMBER
-    | VARIABLE;
-
-'''
-
+grammar = open(path.join(path.dirname(__file__), "grammar.txt"), "r").read()
 regexs, rules, ToAST = parse_ebnf(grammar)
 _parse = make_parse_function(regexs, rules, eof=True)
 
@@ -310,7 +262,7 @@ class Transformer(object):
         stmts = self._grab_stmts(node.children[0])
         return Block(stmts)
 
-    def visit_stmt(self, node):
+    def visit_stmt(self, node):  # noqa
         if len(node.children) == 2 and node.children[0].symbol == 'expr':
             return Stmt(self.visit_expr(node.children[0]))
         head_info = node.children[0].additional_info
@@ -339,7 +291,7 @@ class Transformer(object):
             return Assignment(head_info, self.visit_expr(node.children[2]))
         raise NotImplementedError
 
-    def visit_expr(self, node):
+    def visit_expr(self, node):  # noqa
         if len(node.children) == 1:
             if node.symbol == 'atom':
                 return self.visit_atom(node)
