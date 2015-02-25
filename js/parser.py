@@ -9,6 +9,7 @@ from rpython.rlib.parsing.parsing import ParseError
 from rpython.rlib.parsing.tree import Symbol
 
 
+from js import utils
 from js import bytecode
 
 
@@ -75,6 +76,20 @@ class ConstantNum(AstNode):
     def compile(self, ctx):
         ctx.emit(bytecode.LOAD_CONSTANT_FLOAT,
                  ctx.register_constant_float(self.floatval))
+
+
+class ConstantStr(AstNode):
+
+    ''' String constant
+    '''
+    _fields = ('stringval',)
+
+    def __init__(self, stringval):
+        self.stringval = stringval
+
+    def compile(self, ctx):
+        ctx.emit(bytecode.LOAD_CONSTANT_STRING,
+                 ctx.register_constant_string(self.stringval))
 
 
 class BinOp(AstNode):
@@ -369,11 +384,13 @@ class Transformer(object):
 
     def visit_atom(self, node):
         chnode = node.children[0]
-        if chnode.symbol == 'FLOAT_NUMBER':
+        if chnode.symbol == 'NUMBER':
             return ConstantNum(float(chnode.additional_info))
+        if chnode.symbol == 'STRING':
+            return ConstantStr(utils.unquote_string(chnode.additional_info))
         if chnode.symbol == 'VARIABLE':
             return Variable(chnode.additional_info)
-        raise NotImplementedError
+        raise NotImplementedError(chnode.symbol)
 
 
 def parse(source, filename=None):

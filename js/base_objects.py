@@ -100,6 +100,28 @@ class W_FloatObject(W_Numeric):
         return '<%s: %f>' % (type(self).__name__, self.floatval)
 
 
+class W_StringObject(W_Numeric):
+    #_immutable_fields_ = ['stringval']
+
+    def __init__(self, stringval):
+        self.stringval = stringval
+
+    def is_true(self):
+        return bool(self.stringval)
+
+    def to_string(self):
+        return str(self.stringval)
+
+    def __eq__(self, other):
+        ''' NOT_RPYTHON '''
+        return isinstance(
+            self, type(other)) and self.stringval == other.stringval
+
+    def __repr__(self):
+        ''' NOT_RPYTHON '''
+        return '<%s: %f>' % (type(self).__name__, self.stringval)
+
+
 class W_BuilinFunction(W_Root):
 
     def call(self, arg_list):

@@ -8,7 +8,7 @@ from js import parser
 from js import bytecode
 from js.builtins import BUILTINS
 from js.base_objects import OperationalError
-from js.base_objects import W_FloatObject, W_Function, W_BuilinFunction
+from js.base_objects import W_FloatObject, W_StringObject, W_Function, W_BuilinFunction
 
 
 def get_printable_location(pc, code, bc):
@@ -101,6 +101,8 @@ def execute(frame, bc):  # noqa
 
         if c == bytecode.LOAD_CONSTANT_FLOAT:
             frame.push(W_FloatObject(bc.constants_float[arg]))
+        elif c == bytecode.LOAD_CONSTANT_STRING:
+            frame.push(W_StringObject(bc.constants_string[arg]))
         elif c == bytecode.LOAD_CONSTANT_FN:
             frame.push(W_Function(bc.constants_fn[arg], frame))
         elif c == bytecode.LOAD_VAR:

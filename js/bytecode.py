@@ -3,12 +3,12 @@
 
 old_globals = dict(globals())
 
-LOAD_CONSTANT_FLOAT, LOAD_CONSTANT_FN, LOAD_VAR, ASSIGN, \
+LOAD_CONSTANT_FLOAT, LOAD_CONSTANT_STRING, LOAD_CONSTANT_FN, LOAD_VAR, ASSIGN, \
     DISCARD_TOP, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE, \
     BINARY_ADD, BINARY_SUB, BINARY_MUL, BINARY_DIV, BINARY_EQ, BINARY_LT, \
     BINARY_MOD, \
     CALL, MAKE_FN \
-    = range(17)
+    = range(18)
 
 bytecodes = dict((globals()[f], f) for f in globals()
                  if f not in old_globals and f != 'old_globals')
@@ -30,6 +30,7 @@ class CompilerContext(object):
     def __init__(self, names=None):
         self.data = []
         self.constants_float = []
+        self.constants_string = []
         self.constants_fn = []
         self.names = []
         self.names_to_numbers = {}
@@ -40,6 +41,10 @@ class CompilerContext(object):
     def register_constant_float(self, v):
         self.constants_float.append(v)
         return len(self.constants_float) - 1
+
+    def register_constant_string(self, v):
+        self.constants_string.append(v)
+        return len(self.constants_string) - 1
 
     def register_constant_fn(self, v):
         self.constants_fn.append(v)
@@ -63,6 +68,7 @@ class CompilerContext(object):
             to_code(self.data),
             self.names[:],
             self.constants_float[:],
+            self.constants_string[:],
             self.constants_fn[:],
             co_name=co_name,
             co_filename=co_filename,
@@ -85,13 +91,16 @@ class CompilerContext(object):
 
 
 class ByteCode(object):
-    #_immutable_fields_ = ['code', 'names[*]', 'constants_float', 'constants_fn']
+    # _immutable_fields_ = [
+    #     'code', 'names[*]', 'constants_float', 'constants_string', 'constants_fn'
+    # ]
 
-    def __init__(self, code, names, constants_float, constants_fn,
+    def __init__(self, code, names, constants_float, constants_string, constants_fn,
                  co_name=None, co_filename=None, co_firstlineno=0):
         self.code = code
         self.names = names
         self.constants_float = constants_float
+        self.constants_string = constants_string
         self.constants_fn = constants_fn
         self.co_name = co_name or '__main__'
         self.co_filename = co_filename or '__file__'
