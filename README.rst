@@ -1,71 +1,148 @@
 .. _Python: https://www.python.org/
 .. _virtualenv: https://pypy.python.org/pypi/virtualenv
 .. _virtualenvwrapper: https://pypy.python.org/pypi/virtualenvwrapper
+.. _Python: https://www.python.org/
+.. _virtualenv: https://pypy.python.org/pypi/virtualenv
+.. _virtualenvwrapper: https://pypy.python.org/pypi/virtualenvwrapper
+.. _Docker: https://docker.com/
+.. _Latest Releases: https://github.com/prologic/js-lang/releases
 
 
 Minimal JavaScript Interpreter
 ==============================
 
+.. image:: https://travis-ci.org/prologic/js-lang.svg
+   :target: https://travis-ci.org/prologic/js-lang
+   :alt: Build Status
+
+.. image:: https://coveralls.io/repos/prologic/js-lang/badge.svg
+   :target: https://coveralls.io/r/prologic/js-lang
+   :alt: Coverage
+
+.. image:: https://landscape.io/github/prologic/js-lang/master/landscape.png
+   :target: https://landscape.io/github/prologic/js-lang/master
+   :alt: Quality
+
 This is a minimal JavaScript Interpreter based off
 `kostialopuhin/jss-interp <https://bitbucket.org/kostialopuhin/jss-interp>`_
 and tidied up a bit with some opinionated conventions, documentation and
-project infrastructure.
+project infrastructure as well as several new features.
 
 
 Prerequisites
 -------------
 
-It's recommended that you do all development using a Python Virtual
+It is recommended that you do all development using a Python Virtual
 Environment using `virtualenv`_ and/or using the nice `virtualenvwrapper`_.
 
 ::
-    
-    $ mkvirtualenv jslang
-
-You will need the `RPython <https://bitbucket.org/pypy/pypy>`_ toolchain
-to build the interpreter. The easiest way to do this is to
-`My Fork of PyPy <https://bitbucket.org/prologic/pypy>`_ which includes
-a convenient ``setup-rpython.py`` to make working with the RPython toolchain
-a bit easier.
-
-::
-    
-    $ hg clone https://bitbucket.org/prologic/pypy
-    $ cd pypy
-    $ python setup-rpython.py develop
+   
+    $ mkvirtualenv js-lang
 
 
 Installation
 ------------
 
-Grab the source from https://bitbucket.org/prologic/js-lang and either
-run ``python setup.py develop`` or ``pip install -r requirements.txt``
+Grab the source from https://github.com/prologic/js-lang and either
+run ``python setup.py develop`` or ``pip install -e .``
 
 ::
     
-    $ hg clone https://bitbucket.org/prologic/js-lang
+    $ git clone https://github.com/prologic/js-lang.git
     $ cd js-lang
-    $ pip install -r requirements.txt
+    $ pip install -e .
 
 
 Building
 --------
 
-To build the interpreter simply run ``js/target.py`` against the RPython
-Compiler.
+To build the interpreter simply run ``js/main.py`` against the RPython
+Compiler. There is a ``Makefile`` that has a default target for building
+and translating the interpreter.
 
 ::
     
-    $ rpython --output=jsc js/target.py
+    $ make
+
+You can also use `Docker`_ to build the interpreter:
+
+::
+    
+    $ docker build -t js .
 
 
 Usage
 -----
 
-You can either run the interpreter using `Python`_ itself or running the
-compiled interpreter ``jsc``.
+You can either run the interpreter using `Python`_ itself or by running the
+compiled interpreter ``./bin/js``.
 
 ::
     
-    $ js examples/fib.js
-    $ jsc examples/fib.js
+    $ ./bin/js examples/hello.js
+
+Untranslated running on top of `Python`_ (*CPython*):
+
+::
+    
+    $ js examples/hello.js
+
+
+Grammar
+-------
+
+The grammar of js-lang is currently as follows:
+
+::
+   
+
+    IGNORE: "[ \t\n]";
+
+    NUMBER: "0\.?[0-9]*|[1-9][0-9]*\.?[0-9]*|\.[0-9]+";
+    STRING: "\"([^\"\\]|\\.)*\"";
+
+    ADD_OPER: "[+-]";
+    MULT_OPER: "[*/%]";
+    COMP_OPER: "(==)|(>=)|(<=)|>|<|(!=)";
+
+    VARIABLE: "[a-zA-Z_][a-zA-Z0-9_]*";
+
+    main: statement* [EOF];
+
+    statement:
+          expr ";"
+        | VARIABLE "=" expr ";"
+        | "while" "(" expr ")" "{" statement* "}"
+        | "if" "(" expr ")" "{" statement* "}" "else" "{" statement* "}"
+        | "if" "(" expr ")" "{" statement* "}"
+        | "return" expr ";"
+        | "return" ";";
+
+    expr:
+        ADD_OPER expr | unary;
+    unary:
+        additive COMP_OPER unary | additive;
+    additive:
+        multitive ADD_OPER additive | multitive;
+    multitive:
+        call MULT_OPER multitive | call;
+
+    call:
+        fndef "(" csexpr ")" | fndef "(" ")" | fndef;
+    csexpr:
+        expr "," csexpr | expr;
+
+    fndef:
+          "function" VARIABLE "(" csvar ")" "{" statement* "}"
+        | "function" VARIABLE "(" ")" "{" statement* "}"
+        | primary;
+    csvar:
+        VARIABLE "," csvar | VARIABLE;
+
+    primary:
+          "(" expr ")"
+        | atom;
+    atom:
+          NUMBER
+        | STRING
+        | VARIABLE;
