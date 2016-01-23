@@ -1,10 +1,23 @@
-.PHONY: clean
+.PHONY: clean help js test
 
-all: jsc
+PYTHON = python
+RPYTHON = rpython
+
+OPTS = "--output=bin/js"
+TARGET = "js/main.py"
+
+all: clean test build
+
+help:
+	@echo "clean    Remove build artifacts"
+	@echo "build    Build the interpreter"
+	@echo "test     Run unit and integration tests"
 
 clean:
-	@find . -type f -name '*.pyc' -delete
-	@rm -rf build dist *egg-info jsc
+	@rm -rf bin/js
 
-jsc:
-	@rpython --output=jsc js/target.py
+build:
+	$(RPYTHON) $(OPTS) $(TARGET)
+
+test:
+	$(PYTHON) setup.py test
