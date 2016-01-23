@@ -1,9 +1,6 @@
 .. _Python: https://www.python.org/
 .. _virtualenv: https://pypy.python.org/pypi/virtualenv
 .. _virtualenvwrapper: https://pypy.python.org/pypi/virtualenvwrapper
-.. _Python: https://www.python.org/
-.. _virtualenv: https://pypy.python.org/pypi/virtualenv
-.. _virtualenvwrapper: https://pypy.python.org/pypi/virtualenvwrapper
 .. _Docker: https://docker.com/
 .. _Latest Releases: https://github.com/prologic/js-lang/releases
 
@@ -19,9 +16,9 @@ Minimal JavaScript Interpreter
    :target: https://coveralls.io/r/prologic/js-lang
    :alt: Coverage
 
-.. image:: https://landscape.io/github/prologic/js-lang/master/landscape.png
-   :target: https://landscape.io/github/prologic/js-lang/master
-   :alt: Quality
+.. image:: https://codeclimate.com/github/prologic/js-lang/badges/gpa.svg
+   :target: https://codeclimate.com/github/prologic/js-lang
+   :alt: Code Climate
 
 This is a minimal JavaScript Interpreter based off
 `kostialopuhin/jss-interp <https://bitbucket.org/kostialopuhin/jss-interp>`_
