@@ -4,7 +4,7 @@ PYTHON = python
 RPYTHON = rpython
 
 OPTS = "--output=bin/js"
-TARGET = "js/main.py"
+TARGET = "js/target.py"
 
 all: clean test build
 
