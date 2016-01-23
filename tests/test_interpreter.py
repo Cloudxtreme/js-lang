@@ -7,7 +7,7 @@ from js.base_objects import W_FloatObject, W_BoolObject
 
 
 def test_frame():
-    bc = ByteCode('', ['x', 'y'], [], [])
+    bc = ByteCode('', ['x', 'y'], [], [], [])
     frame = Frame(bc)
     assert len(frame.vars) == 2
     assert frame.valuestack_pos == 0
@@ -29,7 +29,7 @@ def test_load_constant():
     bc = ByteCode(to_code([
         LOAD_CONSTANT_FLOAT, 0,
         RETURN, 0]),
-        [], [12.2], [])
+        [], [12.2], [], [])
     frame = interpret(bc)
     assert frame.test_valuestack == [W_FloatObject(12.2)]
     assert frame.vars == []
@@ -65,7 +65,7 @@ def test_jumps():
         JUMP_ABSOLUTE, 10,
         LOAD_CONSTANT_FLOAT, 2,
         RETURN, 0]),
-        [], [0.0, -1.0, 1.0], [])
+        [], [0.0, -1.0, 1.0], [], [])
     frame = interpret(bc)
     assert frame.test_valuestack == [W_FloatObject(1.0)]
 
@@ -76,7 +76,7 @@ def test_jumps():
         JUMP_ABSOLUTE, 10,
         LOAD_CONSTANT_FLOAT, 2,
         RETURN, 0]),
-        [], [1.0, -1.0, 2.0], [])
+        [], [1.0, -1.0, 2.0], [], [])
     frame = interpret(bc)
     assert frame.test_valuestack == [W_FloatObject(-1.0)]
 
