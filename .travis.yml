@@ -7,3 +7,6 @@ script:
   - make
 after_success:
   - coveralls
+addons:
+  code_climate:
+    repo_token: 8b0481081215cf66cdbe5fe5d13b87345a6f67d6207a5fc9d1d63ea1f02e099f
