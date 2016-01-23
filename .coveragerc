@@ -1,0 +1,12 @@
+[run]
+omit = js/main.py
+       js/__init__.py
+       js/version.py
+       tools/*
+       tests/*
+
+[html]
+directory = coverage
+
+[xml]
+output = coverage.xml
