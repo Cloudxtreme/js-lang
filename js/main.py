@@ -1,35 +1,117 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-
-
-"""Usage: js <filename>"""
+"""Main"""
 
 
 import sys
 
 
-from rpython.rlib.streamio import open_file_as_stream
+from rpython.jit.codewriter.policy import JitPolicy
 
 
-from js.interpreter import run
+import js
+from js.interpreter import Interpreter
+
+from rlib.rpath import basename
+
+
+class Options(object):
+    """Options Container"""
+
+
+def print_usage(prog):
+    print "Usage: %s [options] [file]" % prog
+    return 0
+
+
+def print_help():
+    print "Options and Arguments:"
+    print "  -d enable debug output"
+    print "  -e evaluate the string"
+    print "  -h display this help"
+    print "  -i inspect interactively"
+    print "  -v display the version"
+    return 0
+
+
+def print_version():
+    print "%s %s" % (js.__name__, js.__version__)
+    return 0
+
+
+def parse_bool_arg(name, argv, default=False):
+    for i in xrange(len(argv)):
+        if argv[i] == name:
+            del argv[i]
+            return True
+    return default
+
+
+def parse_arg(name, argv, default=""):
+    for i in xrange(len(argv)):
+        if argv[i] == name:
+            del argv[i]
+            return argv.pop(i)
+    return default
+
+
+def parse_args(argv):
+    opts = Options()
+
+    opts.debug = parse_bool_arg('-d', argv)
+    opts.eval = parse_arg("-e", argv)
+    opts.help = parse_bool_arg("-h", argv)
+    opts.inspect = parse_bool_arg("-i", argv)
+    opts.version = parse_bool_arg("-v", argv)
+
+    del argv[0]
+
+    return opts, argv
 
 
 def main(argv):
-    if not len(argv) == 2:
-        print __doc__
-        return 1
+    prog = basename(argv[0])
+    opts, args = parse_args(argv)
 
-    filename = argv[1]
-    f = open_file_as_stream(filename)
-    source = f.readall()
-    f.close()
+    if opts.help:
+        print_usage(prog)
+        return print_help()
 
-    return run(source, filename=filename)
+    if opts.version:
+        return print_version()
+
+    interpreter = Interpreter(debug=opts.debug)
+
+    if args:
+        interpreter.runfile(args[0])
+        if opts.inspect:
+            interpreter.repl()
+    elif opts.eval:
+        interpreter.runstring(opts.eval)
+        if opts.inspect:
+            interpreter.repl()
+    else:
+        interpreter.repl()
+
+    return 0
 
 
 def entrypoint():
-    main(sys.argv)
+    return main(sys.argv)
 
 
-if __name__ == "__main__":
-    main(sys.argv)
+def target(*dummy):
+    """RPython Translation entrypoint
+
+    :param driver: An instnace of a JITDriver
+    :param args: argv
+    """
+
+    return main, None
+
+
+def jitpolicy(*dummy):
+    """JIT Policy
+
+    :param driver: An instance of a JITDriver
+    """
+
+    return JitPolicy()

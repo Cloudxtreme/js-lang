@@ -2,7 +2,7 @@
 
 from js.bytecode import to_code, ByteCode, \
     LOAD_CONSTANT_FLOAT, RETURN, JUMP_IF_FALSE, JUMP_ABSOLUTE
-from js.interpreter import Frame, interpret, interpret_source
+from js.interpreter import Frame, Interpreter
 from js.base_objects import W_FloatObject, W_BoolObject
 
 
@@ -25,24 +25,25 @@ def test_frame():
     assert frame.valuestack_pos == 1
 
 
-def test_load_constant():
+def test_load_constant(interpreter):
     bc = ByteCode(to_code([
         LOAD_CONSTANT_FLOAT, 0,
         RETURN, 0]),
         [], [12.2], [], [])
-    frame = interpret(bc)
+    frame = Frame(bc)
+    interpreter.run(bc, frame)
     assert frame.test_valuestack == [W_FloatObject(12.2)]
     assert frame.vars == []
 
 
-def test_assignment():
-    frame = interpret_source('x = 2.71;')
+def test_assignment(interpreter):
+    frame = interpreter.runstring('x = 2.71;')
     assert frame.test_valuestack == []
     assert frame.vars == [W_FloatObject(2.71)]
 
 
-def test_load_variable():
-    frame = interpret_source('''
+def test_load_variable(interpreter):
+    frame = interpreter.runstring('''
     x = 2.71;
     y = x;
     ''')
@@ -51,13 +52,13 @@ def test_load_variable():
     assert frame.vars == [W_FloatObject(2.71), W_FloatObject(2.71)]
 
 
-def test_dicard_top():
-    frame = interpret_source('2.71;')
+def test_dicard_top(interpreter):
+    frame = interpreter.runstring('2.71;')
     assert frame.test_valuestack == []
     assert frame.vars == []
 
 
-def test_jumps():
+def test_jumps(interpreter):
     bc = ByteCode(to_code([
         LOAD_CONSTANT_FLOAT, 0,
         JUMP_IF_FALSE, 8,
@@ -66,7 +67,8 @@ def test_jumps():
         LOAD_CONSTANT_FLOAT, 2,
         RETURN, 0]),
         [], [0.0, -1.0, 1.0], [], [])
-    frame = interpret(bc)
+    frame = Frame(bc)
+    interpreter.run(bc, frame)
     assert frame.test_valuestack == [W_FloatObject(1.0)]
 
     bc = ByteCode(to_code([
@@ -77,12 +79,13 @@ def test_jumps():
         LOAD_CONSTANT_FLOAT, 2,
         RETURN, 0]),
         [], [1.0, -1.0, 2.0], [], [])
-    frame = interpret(bc)
+    frame = Frame(bc)
+    interpreter.run(bc, frame)
     assert frame.test_valuestack == [W_FloatObject(-1.0)]
 
 
-def test_if():
-    frame = interpret_source('''
+def test_if(interpreter):
+    frame = interpreter.runstring('''
     if (0) {
         x = 10;
     }''')
@@ -90,7 +93,7 @@ def test_if():
     assert frame.vars == [None]
     assert frame.test_valuestack == []
 
-    frame = interpret_source('''
+    frame = interpreter.runstring('''
     if (1) {
         x = 10;
     }''')
@@ -99,8 +102,8 @@ def test_if():
     assert frame.test_valuestack == []
 
 
-def test_while():
-    frame = interpret_source('''
+def test_while(interpreter):
+    frame = interpreter.runstring('''
     while (0) {
         x = 10;
     }''')
@@ -108,7 +111,7 @@ def test_while():
     assert frame.vars == [None]
     assert frame.test_valuestack == []
 
-    frame = interpret_source('''
+    frame = interpreter.runstring('''
     x = 1;
     y = 10;
     while (x) {
@@ -120,8 +123,8 @@ def test_while():
     assert frame.test_valuestack == []
 
 
-def test_binary_add():
-    frame = interpret_source('''
+def test_binary_add(interpreter):
+    frame = interpreter.runstring('''
     x = 1 + 2.5;
     ''')
     assert frame.names == ['x']
@@ -129,13 +132,13 @@ def test_binary_add():
     assert frame.test_valuestack == []
 
 
-def test_binary_bool():
+def test_binary_bool(interpreter):
     for binary_op, check_fn in [
             ('<', lambda x, y: x < y),
             ('==', lambda x, y: x == y),
     ]:
         for x, y in [(1.0, 2.5), (1.0, 1.0), (1.0, 1.1)]:
-            frame = interpret_source('''
+            frame = interpreter.runstring('''
             x = %s;
             y = %s;
             res = x %s y;
@@ -147,8 +150,8 @@ def test_binary_bool():
             assert frame.test_valuestack == []
 
 
-def test_while_loops():
-    frame = interpret_source('''
+def test_while_loops(interpreter):
+    frame = interpreter.runstring('''
     x = 0;
     while (x < 10) {
         x = x + 1;
@@ -159,15 +162,15 @@ def test_while_loops():
     assert frame.test_valuestack == []
 
 
-def test_print(capfd):
-    frame = interpret_source('print(3.78);')
+def test_print(capfd, interpreter):
+    frame = interpreter.runstring('print(3.78);')
     out, _ = capfd.readouterr()
     assert out == '3.78\n'
     assert frame.test_valuestack == []
 
 
-def test_arithmetic_expressions():
-    frame = interpret_source('''
+def test_arithmetic_expressions(interpreter):
+    frame = interpreter.runstring('''
     x = 10;
     y = 4 + x * 2;
     z = (x + y) / x + 3;
@@ -182,8 +185,8 @@ def test_arithmetic_expressions():
     assert frame.test_valuestack == []
 
 
-def test_fn_noop():
-    frame = interpret_source('''
+def test_fn_noop(interpreter):
+    frame = interpreter.runstring('''
     function foo() {};
     foo();
     ''')
@@ -192,8 +195,8 @@ def test_fn_noop():
     assert frame.test_valuestack == []
 
 
-def test_fn_print(capfd):
-    frame = interpret_source('''
+def test_fn_print(capfd, interpreter):
+    frame = interpreter.runstring('''
     function foo() {
         print(1);
     };
@@ -206,8 +209,8 @@ def test_fn_print(capfd):
     assert frame.test_valuestack == []
 
 
-def test_fn_args(capfd):
-    frame = interpret_source('''
+def test_fn_args(capfd, interpreter):
+    frame = interpreter.runstring('''
     function foo(x) {
         print(x);
     };
@@ -219,7 +222,7 @@ def test_fn_args(capfd):
     assert len(frame.vars) == 1
     assert frame.test_valuestack == []
 
-    frame = interpret_source('''
+    frame = interpreter.runstring('''
     function foo(x, y) {
         print(x + y);
     };
@@ -233,8 +236,8 @@ def test_fn_args(capfd):
     assert frame.test_valuestack == []
 
 
-def test_return():
-    frame = interpret_source('''
+def test_return(interpreter):
+    frame = interpreter.runstring('''
     function const() {
         return 3.14;
     };
@@ -243,7 +246,7 @@ def test_return():
     assert frame.names == ['const', 'z']
     assert frame.vars[1] == W_FloatObject(3.14)
 
-    frame = interpret_source('''
+    frame = interpreter.runstring('''
     function two(x) {
         return x * 2;
     };
@@ -253,8 +256,8 @@ def test_return():
     assert frame.vars[1] == W_FloatObject(44)
 
 
-def test_scope():
-    frame = interpret_source('''
+def test_scope(interpreter):
+    frame = interpreter.runstring('''
     x = 10;
     function s() {
         return x;
@@ -264,7 +267,7 @@ def test_scope():
     assert frame.names == ['x', 's', 'y']
     assert frame.vars[2] == W_FloatObject(10.0)
 
-    frame = interpret_source('''
+    frame = interpreter.runstring('''
     g = 30;
     function s() {
         g = 10;
@@ -285,8 +288,8 @@ def test_scope():
     assert frame.vars[3] == W_FloatObject(10.0)
 
 
-def test_recursion():
-    frame = interpret_source('''
+def test_recursion(interpreter):
+    frame = interpreter.runstring('''
     function fib(x) {
         if (x < 3) {
             return 1;

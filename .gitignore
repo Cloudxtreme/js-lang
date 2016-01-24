@@ -8,4 +8,5 @@ build
 coverage
 .coverage
 *.egg-info
+.coverage.*
 */version.py

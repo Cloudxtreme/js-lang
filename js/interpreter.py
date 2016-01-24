@@ -2,13 +2,23 @@
 
 
 from rpython.rlib import jit
+from rpython.rlib.streamio import open_file_as_stream
 
 
-from js import parser
+import js
 from js import bytecode
-from js.builtins import BUILTINS
-from js.base_objects import OperationalError
-from js.base_objects import W_FloatObject, W_StringObject, W_Function, W_BuilinFunction
+from js.bytecode import dis, CompilerContext
+from js.parser import LexerError, ParseError, parse
+from js .base_objects import OperationalError, \
+        W_FloatObject, W_Function, W_BuilinFunction
+from js .builtins import BUILTINS
+
+from rlib.rreadline import readline
+
+
+BANNER = "%s %s\n" % (js.__name__, js.__version__)
+PS1 = ">>> "
+PS2 = "... "
 
 
 def get_printable_location(pc, code, bc):
@@ -76,91 +86,16 @@ class Frame(object):
             return self.parent.lookup_by_name(name)
 
     @jit.unroll_safe
-    def call(self, fn, arg_list):
+    def call(self, fn, arg_list, interpreter):
         frame = Frame(fn.bytecode, parent=fn.parent_frame)
         for i, value in enumerate(arg_list):
             frame.vars[i] = value
-        return execute(frame, fn.bytecode)
+        return interpreter.run(fn.bytecode, frame)
 
     @property
     def test_valuestack(self):
         ''' NOT_RPYTHON '''
-
         return self.valuestack[:self.valuestack_pos]
-
-
-def execute(frame, bc):  # noqa
-    code = bc.code
-    pc = 0
-    while True:
-        jitdriver.jit_merge_point(pc=pc, code=code, bc=bc, frame=frame)
-
-        c = ord(code[pc])
-        arg = ord(code[pc + 1])
-        pc += 2
-
-        if c == bytecode.LOAD_CONSTANT_FLOAT:
-            frame.push(W_FloatObject(bc.constants_float[arg]))
-        elif c == bytecode.LOAD_CONSTANT_STRING:
-            frame.push(W_StringObject(bc.constants_string[arg]))
-        elif c == bytecode.LOAD_CONSTANT_FN:
-            frame.push(W_Function(bc.constants_fn[arg], frame))
-        elif c == bytecode.LOAD_VAR:
-            frame.push(frame.lookup(arg))
-        elif c == bytecode.ASSIGN:
-            frame.vars[arg] = frame.pop()
-        elif c == bytecode.DISCARD_TOP:
-            frame.pop()
-
-        # TODO - remove repition
-        elif c == bytecode.BINARY_ADD:
-            right = frame.pop()
-            left = frame.pop()
-            w_res = left.add(right)
-            frame.push(w_res)
-        elif c == bytecode.BINARY_SUB:
-            right = frame.pop()
-            left = frame.pop()
-            frame.push(left.sub(right))
-        elif c == bytecode.BINARY_MUL:
-            right = frame.pop()
-            left = frame.pop()
-            frame.push(left.mul(right))
-        elif c == bytecode.BINARY_DIV:
-            right = frame.pop()
-            left = frame.pop()
-            frame.push(left.div(right))
-        elif c == bytecode.BINARY_LT:
-            right = frame.pop()
-            left = frame.pop()
-            frame.push(left.lt(right))
-        elif c == bytecode.BINARY_EQ:
-            right = frame.pop()
-            left = frame.pop()
-            frame.push(left.eq(right))
-        elif c == bytecode.BINARY_MOD:
-            right = frame.pop()
-            left = frame.pop()
-            frame.push(left.mod(right))
-        elif c == bytecode.JUMP_IF_FALSE:
-            if not frame.pop().is_true():
-                pc = arg
-        elif c == bytecode.JUMP_ABSOLUTE:
-            pc = arg
-        elif c == bytecode.CALL:
-            arg_list = pop_args(frame, arg)
-            fn = frame.pop()
-            if isinstance(fn, W_BuilinFunction):
-                frame.push(fn.call(arg_list))
-            else:
-                frame.push(frame.call(fn, arg_list))
-        elif c == bytecode.RETURN:
-            if arg:
-                return frame.pop()
-            else:
-                return None  # TODO - undefined
-        else:
-            assert False
 
 
 @jit.unroll_safe
@@ -171,29 +106,147 @@ def pop_args(frame, n_args):
     return arg_list
 
 
-def interpret(bc):
-    frame = Frame(bc)
-    execute(frame, bc)
-    return frame
+class Interpreter(object):
 
+    def __init__(
+        self, debug=False, testing=False, banner=BANNER, ps1=PS1, ps2=PS2
+    ):
+        self.debug = debug
+        self.testing = testing
 
-def interpret_source(source, filename=None):
-    ast = parser.parse(source, filename=filename)
-    bc = bytecode.CompilerContext.compile_ast(ast)
-    return interpret(bc)
+        self.banner = banner
+        self.ps1 = ps1
+        self.ps2 = ps2
 
+    def runstring(self, s, filename=None):
+        ast = parse(s, filename=filename)
 
-def run(source, filename=None):
-    try:
-        interpret_source(source, filename=filename)
-    except parser.LexerError as e:
-        print 'LexerError', e
-        return 1
-    except parser.ParseError as e:
-        print 'ParseError', e
-        return 1
-    except OperationalError as e:
-        print e
-        return 1
-    else:
-        return 0
+        bc = CompilerContext().compile_ast(ast)
+        frame = Frame(bc)
+
+        if self.debug:  # pragma: no cover
+            print dis(bc.code)
+
+        result = self.run(bc, frame)
+        return frame if self.testing else result
+
+    def runfile(self, filename):
+        f = open_file_as_stream(filename)
+        s = f.readall()
+        f.close()
+
+        return self.runstring(s, filename=filename)
+
+    def repl(self, banner=None, ps1=None, ps2=None):  # pragma: no cover
+        banner = banner or self.banner
+        ps1 = ps1 or self.ps1
+        ps2 = ps2 or self.ps2
+
+        print banner
+
+        while True:
+            try:
+                s = readline(ps1).strip()
+            except EOFError:
+                break
+
+            try:
+                self.runstring(s)
+            except LexerError as e:
+                print "LexerError: ", e
+            except ParseError as e:
+                print "ParseError: ", e
+            except OperationalError as e:
+                print e
+
+    def run(self, bc, frame=None):  # noqa
+        frame = frame or Frame(bc)
+        code = bc.code
+        pc = 0
+        while True:
+
+            jitdriver.jit_merge_point(
+                    pc=pc, code=code, bc=bc, frame=frame)
+
+            c = ord(code[pc])
+            arg = ord(code[pc + 1])
+            pc += 2
+
+            if c == bytecode.LOAD_CONSTANT_FLOAT:
+                frame.push(W_FloatObject(bc.constants_float[arg]))
+
+            elif c == bytecode.LOAD_CONSTANT_FN:
+                frame.push(W_Function(bc.constants_fn[arg], frame))
+
+            elif c == bytecode.LOAD_VAR:
+                frame.push(frame.lookup(arg))
+
+            elif c == bytecode.ASSIGN:
+                frame.vars[arg] = frame.pop()
+
+            elif c == bytecode.DISCARD_TOP:
+                frame.pop()
+
+            # TODO - remove repition
+
+            elif c == bytecode.BINARY_ADD:
+                right = frame.pop()
+                left = frame.pop()
+                w_res = left.add(right)
+                frame.push(w_res)
+
+            elif c == bytecode.BINARY_SUB:
+                right = frame.pop()
+                left = frame.pop()
+                frame.push(left.sub(right))
+
+            elif c == bytecode.BINARY_MUL:
+                right = frame.pop()
+                left = frame.pop()
+                frame.push(left.mul(right))
+
+            elif c == bytecode.BINARY_DIV:
+                right = frame.pop()
+                left = frame.pop()
+                frame.push(left.div(right))
+
+            elif c == bytecode.BINARY_LT:
+                right = frame.pop()
+                left = frame.pop()
+                frame.push(left.lt(right))
+
+            elif c == bytecode.BINARY_EQ:
+                right = frame.pop()
+                left = frame.pop()
+                frame.push(left.eq(right))
+
+            elif c == bytecode.BINARY_MOD:
+                right = frame.pop()
+                left = frame.pop()
+                frame.push(left.mod(right))
+
+            elif c == bytecode.JUMP_IF_FALSE:
+                if not frame.pop().is_true():
+                    pc = arg
+
+            elif c == bytecode.JUMP_ABSOLUTE:
+                pc = arg
+
+            elif c == bytecode.CALL:
+                arg_list = pop_args(frame, arg)
+                fn = frame.pop()
+                if isinstance(fn, W_BuilinFunction):
+                    frame.push(fn.call(arg_list))
+                else:
+                    frame.push(frame.call(fn, arg_list, self))
+
+            elif c == bytecode.RETURN:
+                if arg:
+                    return frame.pop()
+                else:
+                    return None  # TODO - undefined
+
+            else:
+                assert False
+
+        return frame
